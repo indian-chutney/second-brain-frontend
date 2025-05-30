@@ -1,0 +1,23 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: oklch(0.6056 0.2189 292.72);
+  --color-bg-light: oklch(0.9855 0.0054 274.97);
+  --color-back-dark: oklch(0.2132 0.0042 264.48);
+  --color-btn-dark: oklch(0.2517 0.004 264.49);
+  --color-neutral-silver: oklch(0.6307 0.0127 252.15);
+  --color-accent-sun: oklch(0.8402 0.1354 74.92);
+  --color-bd-silver: oklch(0.3248 0.0038 264.51);
+
+  --font-inter: "Inter", sans-serif;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  margin: 0;
+  background-color: #000000;
+}
