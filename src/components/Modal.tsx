@@ -1,63 +1,68 @@
-import { useState } from "react";
-import { InputBox } from "./Input";
-import { Button } from "./Button";
-import { Logo } from "../assets/logo";
+import { useEffect, useRef } from "react";
+import { Form } from "./Form";
+import { z } from "zod";
 
-export const Modal = ({ isOpen }: { isOpen: boolean }) => {
+interface modalProp {
+  isOpen: boolean;
+  close: () => void;
+}
+
+export const Modal = (props: modalProp) => {
   return (
     <>
-      {isOpen && (
+      {props.isOpen && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] flex justify-center items-center">
-          <ModalCard />
+          <ModalCard close={props.close} />
         </div>
       )}
     </>
   );
 };
 
-const ModalCard = () => {
-  const [val, setVal] = useState(false);
-  const [input, setInput] = useState("");
+const ModalCard = ({ close }: { close: () => void }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = () => {
-    setVal(true);
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        close();
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
-    setTimeout(() => setVal(false), 100);
+  return <Form ref={modalRef} variant="modal" />;
+};
+
+interface submit {
+  Title: string;
+  Type: string;
+  Link: string;
+  Tags: string;
+  backendRequest?: () => void;
+}
+
+const onSubmit = (props: submit) => {
+  const formData = {
+    Title: props.Title,
+    Type: props.Type,
+    Link: props.Link,
+    Tags: props.Tags.split(","),
   };
-  return (
-    <div className="bg-back-dark w-[400px] flex flex-col text-white p-6 gap-6 rounded-xl">
-      <Logo size="md" />
-      <InputBox
-        variant="modal"
-        placeholder="Title"
-        setChange={setInput}
-        submit={val}
-      />
-      <InputBox
-        variant="modal"
-        placeholder="Type"
-        setChange={setInput}
-        submit={val}
-      />
-      <InputBox
-        variant="modal"
-        placeholder="Link"
-        setChange={setInput}
-        submit={val}
-      />
-      <InputBox
-        variant="modal"
-        placeholder="Tags"
-        setChange={setInput}
-        submit={val}
-      />
-      <Button
-        variant="primary"
-        size="p-sm"
-        text="Submit"
-        onClick={handleSubmit}
-      />
-      <p>Input val : {input}</p>
-    </div>
-  );
+
+  const schemaForm = z.object({
+    Title: z.string().max(20),
+    Type: z.enum(["audio", "video", "image", "article"]),
+    Link: z.string().url(),
+    Tags: z.array(z.string()),
+  });
+
+  const result = schemaForm.safeParse(formData);
+
+  if (result.success) {
+    console.log(result);
+  } else {
+    console.log("error");
+  }
 };

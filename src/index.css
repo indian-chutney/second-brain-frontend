@@ -14,10 +14,7 @@
   --font-inter: "Inter", sans-serif;
 }
 
-body {
-  display: grid;
-  place-items: center;
-  min-height: 100vh;
-  margin: 0;
-  background-color: #000000;
+:root {
+  font-family: var(--font-inter);
+  background-color: var(--color-back-dark);
 }
