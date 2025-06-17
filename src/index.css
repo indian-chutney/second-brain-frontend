@@ -12,6 +12,8 @@
   --color-bd-silver: oklch(0.3248 0.0038 264.51);
 
   --font-inter: "Inter", sans-serif;
+
+  --breakpoint-tab: 1224px;
 }
 
 :root {

@@ -7,12 +7,14 @@ interface InputProps {
   variant: Variants;
   name: string;
   error?: boolean;
+  pwd?: boolean;
 }
 
 interface StyleProps {
   variant: Variants;
   name: string;
   error?: boolean;
+  pwd?: boolean;
 }
 
 const modalStyle =
@@ -27,7 +29,7 @@ const InputStyle = (props: StyleProps) => {
     <div className={`${modalStyle} ${props.error ? errorStyle : normalStyle}`}>
       <input
         name={props.name}
-        type="text"
+        type={props.pwd ? "password" : "text"}
         placeholder={props.name}
         className="border-none focus:outline-none bg-transparent w-full"
       />

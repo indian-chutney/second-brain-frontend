@@ -1,0 +1,184 @@
+import {
+  OpenNewWindow,
+  Book,
+  Microphone,
+  PasteClipboard,
+  ClipboardCheck,
+  GoogleDrive,
+  Trash,
+  MoreHoriz,
+  Menu,
+  EmptyPage,
+  Xmark,
+  Brain,
+  Plus,
+  ShareAndroid,
+  X,
+  Youtube,
+} from "iconoir-react";
+import { IconSizeVariants, type IconProps } from ".";
+
+const brandcolor = "#8b5cf6";
+const secondcolor = "#808a92";
+
+export const LinkIcon = (props: IconProps) => {
+  return (
+    <OpenNewWindow
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const ArticleIcon = (props: IconProps) => {
+  return (
+    <Book
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const AudioIcon = (props: IconProps) => {
+  return (
+    <Microphone
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const CopyIcon = (props: IconProps) => {
+  return (
+    <PasteClipboard
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const CopiedIcon = (props: IconProps) => {
+  return (
+    <ClipboardCheck
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={"#ffffff"}
+      strokeWidth={"1.9"}
+    />
+  );
+};
+
+export const DocumetIcon = (props: IconProps) => {
+  return (
+    <GoogleDrive
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const OptionsIcon = (props: IconProps) => {
+  return (
+    <MoreHoriz
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const MenuIcon = (props: IconProps) => {
+  return (
+    <Menu
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const EmptyIcon = (props: IconProps) => {
+  return (
+    <EmptyPage
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const ExitIcon = (props: IconProps) => {
+  return (
+    <Xmark
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const LogoIcon = (props: IconProps) => {
+  return (
+    <Brain
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={brandcolor}
+      strokeWidth={"2.2"}
+    />
+  );
+};
+
+export const ShareIcon = (props: IconProps) => {
+  return (
+    <ShareAndroid
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const PlusIcon = (props: IconProps) => {
+  return (
+    <Plus
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const Tweet = (props: IconProps) => {
+  return (
+    <X
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const VideoIcon = (props: IconProps) => {
+  return (
+    <Youtube
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const DeleteIcon = (props: IconProps) => {
+  return (
+    <Trash
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={"#FF0000"}
+    />
+  );
+};

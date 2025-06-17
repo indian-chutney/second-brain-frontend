@@ -9,7 +9,7 @@ type Variants = "modal" | "signup" | "signin";
 
 interface FormProps {
   variant: Variants;
-  onsubmit?: () => void;
+  onSubmit?: () => void;
   ref?: RefObject<HTMLDivElement | null>;
 }
 
@@ -17,7 +17,8 @@ interface FormErrors {
   [key: string]: string | undefined;
 }
 
-const Modalform = ({
+// Modal form for creating content
+const ModalForm = ({
   ref,
   errors,
 }: {
@@ -64,33 +65,70 @@ const Modalform = ({
   );
 };
 
-const SignForm = ({ errors }: { errors: FormErrors }) => {
-  return <div></div>;
+// Sign in/up form for authentication
+const SignForm = ({
+  errors,
+  variant,
+}: {
+  errors: FormErrors;
+  variant: "signin" | "signup";
+}) => {
+  return (
+    <div className="bg-back-dark w-[400px] flex flex-col text-white p-6 gap-6 rounded-xl">
+      <div className="mb-4">
+        <InputBox variant="input" name="Email" error={!!errors.email} />
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+        )}
+      </div>
+
+      <div className="mb-4">
+        <InputBox
+          variant="input"
+          name="Password"
+          pwd={true}
+          error={!!errors.password}
+        />
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+        )}
+      </div>
+
+      {variant === "signup" && (
+        <div className="mb-4">
+          <InputBox
+            variant="input"
+            name="ConfirmPassword"
+            pwd={true}
+            error={!!errors.confirmPassword}
+          />
+          {errors.confirmPassword && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.confirmPassword}
+            </p>
+          )}
+        </div>
+      )}
+
+      <Button
+        variant="primary"
+        size="p-sm"
+        text={variant === "signin" ? "Sign In" : "Sign Up"}
+      />
+    </div>
+  );
 };
 
-const getFormComponent = (variant: Variants) => {
-  switch (variant) {
-    case "modal":
-      return Modalform;
-    case "signin":
-    case "signup":
-      return SignForm;
-    default:
-      return SignForm;
-  }
-};
-
-const validateForm = (formData: FormData): FormErrors => {
+// Validation for modal form
+const validateModalForm = (formData: FormData): FormErrors => {
   const errors: FormErrors = {};
 
-  // Get form values
   const title = formData.get("Title") as string;
   const type = formData.get("Type") as string;
   const link = formData.get("Link") as string;
   const tags = formData.get("Tags") as string;
 
-  // Define schema
-  const schemaData = z.object({
+  const modalSchema = z.object({
     title: z
       .string()
       .min(1, "Title is required")
@@ -102,41 +140,74 @@ const validateForm = (formData: FormData): FormErrors => {
     tags: z.string().min(1, "At least one tag is required"),
   });
 
+  // Validate each field individually
+  const fields = [
+    { key: "title", value: title, schema: modalSchema.shape.title },
+    { key: "type", value: type, schema: modalSchema.shape.type },
+    { key: "link", value: link, schema: modalSchema.shape.link },
+    { key: "tags", value: tags, schema: modalSchema.shape.tags },
+  ];
+
+  fields.forEach(({ key, value, schema }) => {
+    try {
+      schema.parse(value);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        errors[key] = err.errors[0]?.message;
+      }
+    }
+  });
+
+  return errors;
+};
+
+// Validation for sign in/up form
+const validateSignForm = (
+  formData: FormData,
+  variant: "signin" | "signup",
+): FormErrors => {
+  const errors: FormErrors = {};
+
+  const email = formData.get("Email") as string;
+  const password = formData.get("Password") as string;
+  const confirmPassword = formData.get("ConfirmPassword") as string;
+
+  const signSchema = z.object({
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .email("Please enter a valid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    ...(variant === "signup" && {
+      confirmPassword: z.string().min(1, "Please confirm your password"),
+    }),
+  });
+
+  // Validate email
   try {
-    // Validate each field individually to get specific errors
-    try {
-      schemaData.shape.title.parse(title);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        errors.title = err.errors[0]?.message;
-      }
+    signSchema.shape.email.parse(email);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      errors.email = err.errors[0]?.message;
     }
+  }
 
-    try {
-      schemaData.shape.type.parse(type);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        errors.type = err.errors[0]?.message;
-      }
+  // Validate password
+  try {
+    signSchema.shape.password.parse(password);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      errors.password = err.errors[0]?.message;
     }
+  }
 
-    try {
-      schemaData.shape.link.parse(link);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        errors.link = err.errors[0]?.message;
-      }
+  // For signup, validate confirm password
+  if (variant === "signup") {
+    if (!confirmPassword) {
+      errors.confirmPassword = "Please confirm your password";
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords don't match";
     }
-
-    try {
-      schemaData.shape.tags.parse(tags);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        errors.tags = err.errors[0]?.message;
-      }
-    }
-  } catch (error) {
-    console.error("Validation error:", error);
   }
 
   return errors;
@@ -144,35 +215,51 @@ const validateForm = (formData: FormData): FormErrors => {
 
 export const Form = (props: FormProps) => {
   const [errors, setErrors] = useState<FormErrors>({});
-  const Component = getFormComponent(props.variant);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    // Validate form and get errors
-    const validationErrors = validateForm(formData);
+    // Validate based on form variant
+    let validationErrors: FormErrors = {};
+
+    if (props.variant === "modal") {
+      validationErrors = validateModalForm(formData);
+    } else {
+      validationErrors = validateSignForm(formData, props.variant);
+    }
+
     setErrors(validationErrors);
 
     // If no errors, process the form
     if (Object.keys(validationErrors).length === 0) {
-      console.log("Form is valid:", Object.fromEntries(formData));
+      if (props.variant === "modal") {
+        // Process modal form data
+        const processedData = {
+          title: formData.get("Title") as string,
+          type: formData.get("Type") as string,
+          link: formData.get("Link") as string,
+          tags: (formData.get("Tags") as string)
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag),
+        };
+        console.log("Modal form data:", processedData);
+      } else {
+        // Process sign in/up form data
+        const authData = {
+          email: formData.get("Email") as string,
+          password: formData.get("Password") as string,
+          ...(props.variant === "signup" && {
+            confirmPassword: formData.get("ConfirmPassword") as string,
+          }),
+        };
+        console.log(`${props.variant} form data:`, authData);
+      }
 
-      // Process the tags properly
-      const processedData = {
-        title: formData.get("Title") as string,
-        type: formData.get("Type") as string,
-        link: formData.get("Link") as string,
-        tags: (formData.get("Tags") as string)
-          .split(",")
-          .filter((tag) => tag.trim()),
-      };
-
-      console.log("Processed data:", processedData);
-
-      // Call the onsubmit callback if provided
-      if (props.onsubmit) {
-        props.onsubmit();
+      // Call the onSubmit callback if provided
+      if (props.onSubmit) {
+        props.onSubmit();
       }
     } else {
       console.log("Form has errors:", validationErrors);
@@ -181,7 +268,11 @@ export const Form = (props: FormProps) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Component ref={props.ref} errors={errors} />
+      {props.variant === "modal" ? (
+        <ModalForm ref={props.ref} errors={errors} />
+      ) : (
+        <SignForm errors={errors} variant={props.variant} />
+      )}
     </form>
   );
 };

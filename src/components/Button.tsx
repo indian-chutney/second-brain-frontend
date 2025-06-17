@@ -14,16 +14,16 @@ interface ButtonProps {
 }
 
 const variantStyle = {
-  primary: "bg-brand-primary rounded-[8px] text-[23px]",
+  primary: "bg-brand-primary rounded-[8px] font-medium",
   secondary: "bg-btn-dark rounded-[29px] text-white  gap-[10px]",
 };
 
 const defaultStyles = "font-inter inline-flex items-center justify-center";
 
 const sizeStyles = {
-  "p-sm": "h-[53px] px-[19px] py-[10px]",
-  "p-md": "h-[75px] px-[21px] py-[10px]",
-  "p-lg": "h-[63px] px-[195px] py-[10px]",
+  "p-sm": "h-[43px] px-[17px] py-[8px] text-[18px]",
+  "p-md": "h-[75px] px-[21px] py-[10px] text-[23px]",
+  "p-lg": "h-[63px] px-[195px] py-[10px] text-[23px]",
   "s-sm": "h-[48px] px-[23px] py-[18px] text-[12px]",
   "s-md": "h-[56px] px-[27px] py-[22px] text-[15px]",
   "s-ico": "h-[48px] w-[48px] px-[15px] py-[15px]",
