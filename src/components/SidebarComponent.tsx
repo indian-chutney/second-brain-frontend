@@ -1,18 +1,25 @@
 import type { ReactElement } from "react";
-import { ArticleIcon } from "../assets/article";
-import { AudioIcon } from "../assets/audio";
+
 import { Notion } from "../assets/notion";
-import { DoumentIcon } from "../assets/document";
-import { Tweet } from "../assets/tweet";
-import { VideoIcon } from "../assets/video";
+
+import {
+  ArticleIcon,
+  AudioIcon,
+  DocumentIcon,
+  SettingsIcon,
+  Tweet,
+  VideoIcon,
+} from "../assets/icons";
+import { useModalContext } from "../hooks/hooks";
 
 const iconsMap: Record<string, ReactElement> = {
   tweets: <Tweet size="md" />,
   notion: <Notion size="md" />,
-  document: <DoumentIcon size="md" />,
+  document: <DocumentIcon size="md" />,
   article: <ArticleIcon size="md" />,
   video: <VideoIcon size="md" />,
   audio: <AudioIcon size="md" />,
+  settings: <SettingsIcon size="md" />,
 };
 
 type variants =
@@ -21,11 +28,18 @@ type variants =
   | "document"
   | "article"
   | "video"
-  | "audio";
+  | "audio"
+  | "settings";
 
 export const SidebarComponent = (props: { variant: variants }) => {
+  const { setSetting } = useModalContext();
   return (
-    <div className="flex items-center gap-[5px]">
+    <div
+      className="flex items-center gap-[5px] cursor-pointer"
+      onClick={
+        props.variant == "settings" ? () => setSetting((c) => !c) : undefined
+      }
+    >
       {iconsMap[props.variant]}
       <p className="text-[20px] text-white hover:text-brand-primary">
         {props.variant.charAt(0).toUpperCase() + props.variant.slice(1)}

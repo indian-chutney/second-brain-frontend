@@ -15,6 +15,9 @@ import {
   ShareAndroid,
   X,
   Youtube,
+  Settings,
+  ProfileCircle,
+  ArrowLeft,
 } from "iconoir-react";
 import { IconSizeVariants, type IconProps } from ".";
 
@@ -72,7 +75,7 @@ export const CopiedIcon = (props: IconProps) => {
   );
 };
 
-export const DocumetIcon = (props: IconProps) => {
+export const DocumentIcon = (props: IconProps) => {
   return (
     <GoogleDrive
       height={IconSizeVariants[props.size]}
@@ -122,7 +125,7 @@ export const ExitIcon = (props: IconProps) => {
   );
 };
 
-export const LogoIcon = (props: IconProps) => {
+export const Logo = (props: IconProps) => {
   return (
     <Brain
       height={IconSizeVariants[props.size]}
@@ -148,7 +151,7 @@ export const PlusIcon = (props: IconProps) => {
     <Plus
       height={IconSizeVariants[props.size]}
       width={IconSizeVariants[props.size]}
-      color={secondcolor}
+      color={brandcolor}
     />
   );
 };
@@ -179,6 +182,36 @@ export const DeleteIcon = (props: IconProps) => {
       height={IconSizeVariants[props.size]}
       width={IconSizeVariants[props.size]}
       color={"#FF0000"}
+    />
+  );
+};
+
+export const SettingsIcon = (props: IconProps) => {
+  return (
+    <Settings
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const ProfileIcon = (props: IconProps) => {
+  return (
+    <ProfileCircle
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const BackIcon = (props: IconProps) => {
+  return (
+    <ArrowLeft
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
     />
   );
 };

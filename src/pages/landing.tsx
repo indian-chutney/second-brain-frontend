@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import { BackgroundLanding } from "../components/Background";
 import { Button } from "../components/Button";
 import { NavBar } from "../components/Navbar";
 
 export const Landing = () => {
+  const navigate = useNavigate();
   return (
     <div>
       <NavBar variant="landing" />
@@ -16,7 +18,12 @@ export const Landing = () => {
             Organize your thoughts, collections, and tools — all in one place.
             Perfect for teams, creators, and knowledge hoarders
           </p>
-          <Button variant="primary" size="p-md" text="Get Started" />
+          <Button
+            variant="primary"
+            size="p-md"
+            text="Get Started"
+            onClick={() => navigate("/signup")}
+          />
         </div>
       </div>
     </div>

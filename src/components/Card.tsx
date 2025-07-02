@@ -1,18 +1,21 @@
 import type { ReactElement } from "react";
 import { useState } from "react";
-import { Tweet } from "../assets/tweet";
 import { Notion } from "../assets/notion";
-import { DoumentIcon } from "../assets/document";
-import { ArticleIcon } from "../assets/article";
-import { VideoIcon } from "../assets/video";
-import { AudioIcon } from "../assets/audio";
 import { Button } from "./Button";
-import { LinkIcon } from "../assets/Link";
-import { CopyIcon } from "../assets/clipboard1";
-import { CopiedIcon } from "../assets/clipboard2";
-import { OptionsIcon } from "../assets/dots";
-import { EmptyIcon } from "../assets/empty";
-import { PlusIcon } from "../assets/plus";
+import {
+  Tweet,
+  DocumentIcon,
+  ArticleIcon,
+  VideoIcon,
+  AudioIcon,
+  LinkIcon,
+  CopyIcon,
+  CopiedIcon,
+  OptionsIcon,
+  EmptyIcon,
+  PlusIcon,
+} from "../assets/icons";
+import { useModalContext } from "../hooks/hooks";
 
 type ContentTypes =
   | "tweets"
@@ -26,7 +29,7 @@ type ContentTypes =
 const iconsMap: Record<ContentTypes, ReactElement> = {
   tweets: <Tweet size="lg" />,
   notion: <Notion size="lg" />,
-  documents: <DoumentIcon size="lg" />,
+  documents: <DocumentIcon size="lg" />,
   article: <ArticleIcon size="lg" />,
   video: <VideoIcon size="lg" />,
   audio: <AudioIcon size="lg" />,
@@ -49,7 +52,7 @@ type CardProps = emptycardProps | contentcardProps;
 
 export const Card = (props: CardProps) => {
   return (
-    <div className="w-[300px] rounded-[10px] flex flex-col overflow-hidden">
+    <div className="w-[300px] rounded-[10px] hover:scale-[1.03] transition-transform duration-300 flex flex-col overflow-hidden">
       {props.variant === "empty" ? (
         <>
           <Header type="empty" />
@@ -70,6 +73,7 @@ export const Card = (props: CardProps) => {
 };
 
 const EmptyContainer = () => {
+  const { setModal } = useModalContext();
   return (
     <>
       <div className="bg-btn-dark text-white px-[22px] py-[26px] flex-1">
@@ -79,6 +83,9 @@ const EmptyContainer = () => {
           border={true}
           text="Create New Card"
           endIcon={<PlusIcon size="sm" />}
+          onClick={() => {
+            setModal((c) => !c);
+          }}
         />
       </div>
     </>
@@ -113,6 +120,7 @@ const CardContainer = (props: {
 
 const ActionButtons = (props: { link: string }) => {
   const [isCopied, setCopied] = useState(false);
+  const { deleteModal, setDeleteModal } = useModalContext();
 
   const handleCopy = async () => {
     try {
@@ -148,6 +156,10 @@ const ActionButtons = (props: { link: string }) => {
         size="s-ico"
         border={true}
         startIcon={<OptionsIcon size="sm" />}
+        onClick={() => {
+          setDeleteModal((c) => !c);
+          console.log(deleteModal);
+        }}
       />
     </div>
   );
