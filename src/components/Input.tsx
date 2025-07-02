@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { OptionsIcon } from "../assets/dots";
+import { OptionsIcon } from "../assets/icons";
 
 type Variants = "input" | "tags" | "options";
 
@@ -31,6 +31,7 @@ const InputStyle = (props: StyleProps) => {
         name={props.name}
         type={props.pwd ? "password" : "text"}
         placeholder={props.name}
+        autoComplete="off"
         className="border-none focus:outline-none bg-transparent w-full"
       />
     </div>

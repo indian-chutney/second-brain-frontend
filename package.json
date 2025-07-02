@@ -11,19 +11,23 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
+    "@tanstack/react-query": "^5.81.5",
+    "axios": "^1.10.0",
+    "framer-motion": "^12.19.2",
     "iconoir-react": "^7.11.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-responsive": "^10.0.1",
-    "react-router-dom": "^7.6.1",
+    "react-router-dom": "^7.6.3",
     "tailwindcss": "^4.1.7",
-    "zod": "^3.25.42"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "dotenv": "^16.5.0",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",

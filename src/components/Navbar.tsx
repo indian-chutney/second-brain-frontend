@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { DropIcon } from "../assets/drop";
-import { Logo } from "../assets/logo";
-import { ExitIcon } from "../assets/exit";
+import { MenuIcon, Logo, ExitIcon } from "../assets/icons";
 import { SidebarComponent } from "./SidebarComponent";
 import { Button } from "./Button";
+import { useNavigate } from "react-router-dom";
 
 type navbarVariants = "mobile-dashboard" | "landing";
 
@@ -13,15 +12,24 @@ export const NavBar = (props: { variant: navbarVariants }) => {
 };
 
 const LandingNavbar = () => {
+  const navigate = useNavigate();
   return (
     <div className="fixed top-0 left-0 bg-back-dark flex justify-between items-center w-full px-[20px] py-[18px] border border-solid border-b-bd-silver z-50">
-      <div className="flex items-center gap-[5px]">
+      <div
+        className="flex items-center gap-[5px] cursor-pointer"
+        onClick={() => navigate("/")}
+      >
         <Logo size="logo" />
         <p className="text-white text-[29px] font-semibold tracking-tight">
           Second Brain
         </p>
       </div>
-      <Button variant="primary" size="p-sm" text="Get Started" />
+      <Button
+        variant="primary"
+        size="p-sm"
+        text="Get Started"
+        onClick={() => navigate("/signup")}
+      />
     </div>
   );
 };
@@ -48,7 +56,7 @@ const DashNavbar = () => {
             aria-label={navopen ? "Close menu" : "Open menu"}
             aria-expanded={navopen}
           >
-            {navopen ? <ExitIcon size="md" /> : <DropIcon size="md" />}
+            {navopen ? <ExitIcon size="md" /> : <MenuIcon size="md" />}
           </button>
         </div>
       </div>
@@ -93,8 +101,6 @@ const DropDown = () => {
     <div className="h-full w-full pt-[100px] overflow-y-auto">
       {/* Dropdown Content */}
       <div className="px-[30px] py-[20px]">
-        {/* Add Content Button (Mobile) */}
-
         {/* Navigation Menu */}
         <nav className="flex flex-col gap-[20px]">
           <h3 className="text-neutral-silver text-sm font-medium uppercase tracking-wider mb-[10px]">
@@ -113,19 +119,10 @@ const DropDown = () => {
             </div>
           ))}
         </nav>
-
         {/* Optional: Additional Menu Items */}
         <div className="mt-[60px] pt-[30px] border-t border-bd-silver">
           <div className="flex flex-col gap-[20px]">
-            <button className="text-left text-white hover:text-brand-primary transition-colors duration-200 py-2">
-              Settings
-            </button>
-            <button className="text-left text-white hover:text-brand-primary transition-colors duration-200 py-2">
-              Account
-            </button>
-            <button className="text-left text-neutral-silver hover:text-red-500 transition-colors duration-200 py-2">
-              Sign Out
-            </button>
+            <SidebarComponent variant="settings" />
           </div>
         </div>
       </div>

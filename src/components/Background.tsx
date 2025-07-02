@@ -1,9 +1,7 @@
 import { useEffect, useRef } from "react";
-import { ArticleIcon } from "../assets/article";
-import { DoumentIcon } from "../assets/document";
 import { Notion } from "../assets/notion";
-import { Tweet } from "../assets/tweet";
-import { VideoIcon } from "../assets/video";
+
+import { ArticleIcon, DocumentIcon, Tweet, VideoIcon } from "../assets/icons";
 
 export const BackgroundLanding = () => {
   const iconsref = useRef<(HTMLDivElement | null)[]>([]);
@@ -60,7 +58,7 @@ export const BackgroundLanding = () => {
         }}
         className={`${defaultStyle} top-1/4 right-50`}
       >
-        <DoumentIcon size="lg" />
+        <DocumentIcon size="lg" />
       </div>
       <div
         ref={(el) => {

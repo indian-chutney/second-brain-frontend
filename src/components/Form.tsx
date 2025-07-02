@@ -1,37 +1,107 @@
 import { InputBox } from "./Input";
 import { Button } from "./Button";
-import { Logo } from "../assets/logo";
-import type { RefObject } from "react";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../contexts/contexts";
 
 type Variants = "modal" | "signup" | "signin";
 
 interface FormProps {
   variant: Variants;
-  onSubmit?: () => void;
-  ref?: RefObject<HTMLDivElement | null>;
 }
 
 interface FormErrors {
   [key: string]: string | undefined;
 }
 
-// Modal form for creating content
-const ModalForm = ({
-  ref,
-  errors,
-}: {
-  ref: RefObject<HTMLDivElement | null> | undefined;
-  errors: FormErrors;
-}) => {
-  return (
-    <div
-      ref={ref}
-      className="bg-back-dark w-[400px] flex flex-col text-white p-6 gap-6 rounded-xl"
-    >
-      <Logo size="md" />
+interface formDataProps {
+  email: string | null;
+  password: string | null;
+  username?: string | null;
+  confirmPassword?: string | null;
+}
 
+const backend_url = import.meta.env.VITE_BACKEND_URL;
+
+export const Form = (props: FormProps) => {
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [success, setSuccess] = useState(false);
+  const [token, setToken] = useState("");
+  const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    if (props.variant == "signup" || props.variant == "signin") {
+      const authData: formDataProps = {
+        email: formData.get("Email") as string,
+        password: formData.get("Password") as string,
+        ...(props.variant == "signup" && {
+          username: formData.get("Username") as string,
+          confirmPassword: formData.get("ConfirmPassword") as string,
+        }),
+      };
+
+      const { data, errors } = validateForm(
+        props.variant == "signup" ? signupSchema : loginSchema,
+        authData,
+      );
+      if (errors) {
+        setErrors(errors);
+      } else {
+        const datawithVariant = {
+          ...data,
+          variant: props.variant == "signup" ? "signup" : "signin",
+        };
+        const { backendError, response, token } = await signBackendPost(
+          datawithVariant as authDataProps,
+        );
+        if (backendError) {
+          setErrors({ backend: response });
+          console.log(errors);
+        } else {
+          setErrors({});
+          setSuccess(true);
+          if (token) {
+            setToken(token);
+          }
+        }
+      }
+    }
+  };
+  return (
+    <form onSubmit={handleSubmit}>
+      {props.variant === "modal" ? (
+        <ModalForm errors={errors} />
+      ) : (
+        <SignForm
+          errors={errors}
+          variant={props.variant}
+          isSuccess={success}
+          onSuccess={
+            props.variant == "signup"
+              ? () => {
+                  navigate("/signin");
+                }
+              : () => {
+                  if (token) {
+                    authContext?.login(token);
+                  }
+                }
+          }
+        />
+      )}
+    </form>
+  );
+};
+
+const ModalForm = ({ errors }: { errors: FormErrors }) => {
+  return (
+    <div className="flex flex-col gap-6">
       <div>
         <InputBox variant="input" name="Title" error={!!errors.title} />
         {errors.title && (
@@ -65,49 +135,100 @@ const ModalForm = ({
   );
 };
 
-// Sign in/up form for authentication
+const ErrorText = ({ children }: { children: string }) => (
+  <p className="text-red-400 text-xs mt-1.5 px-1 leading-4 opacity-90">
+    {children}
+  </p>
+);
+
+const ErrorBanner = ({ message }: { message: string }) => (
+  <div className="bg-red-500/8 border border-red-500/15 rounded-lg p-3 mb-2">
+    <p className="text-red-400 text-sm">{message}</p>
+  </div>
+);
+
+const SuccessBanner = ({ message }: { message: string }) => (
+  <div className="bg-green-500/8 border border-green-500/15 rounded-lg p-3 mb-2">
+    <p className="text-green-400 text-sm">{message}</p>
+  </div>
+);
+
+const InputWrapper = ({
+  children,
+  error,
+}: {
+  children: React.ReactNode;
+  error?: string;
+}) => (
+  <div className="space-y-0">
+    {children}
+    {error && <ErrorText>{error}</ErrorText>}
+  </div>
+);
+
 const SignForm = ({
   errors,
   variant,
+  isSuccess,
+  onSuccess,
 }: {
   errors: FormErrors;
   variant: "signin" | "signup";
+  isSuccess?: boolean;
+  onSuccess?: () => void;
 }) => {
-  return (
-    <div className="bg-back-dark w-[400px] flex flex-col text-white p-6 gap-6 rounded-xl">
-      <div className="mb-4">
-        <InputBox variant="input" name="Email" error={!!errors.email} />
-        {errors.email && (
-          <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-        )}
-      </div>
+  useEffect(() => {
+    if (isSuccess && onSuccess) {
+      const timer = setTimeout(() => {
+        onSuccess();
+      }, 3000);
 
-      <div className="mb-4">
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, onSuccess]);
+
+  return (
+    <div
+      className={`bg-back-dark w-[400px] flex flex-col text-white p-6 gap-6 rounded-xl ${isSuccess ? "opacity-50 pointer-events-none" : ""}`}
+    >
+      {errors.backend && <ErrorBanner message={errors.backend} />}
+      {isSuccess && (
+        <SuccessBanner
+          message={
+            variant === "signup"
+              ? "Account created successfully!"
+              : "Signed in successfully!"
+          }
+        />
+      )}
+      <InputWrapper error={errors.email}>
+        <InputBox variant="input" name="Email" error={!!errors.email} />
+      </InputWrapper>
+
+      {variant === "signup" && (
+        <InputWrapper error={errors.username}>
+          <InputBox variant="input" name="Username" error={!!errors.username} />
+        </InputWrapper>
+      )}
+
+      <InputWrapper error={errors.password}>
         <InputBox
           variant="input"
           name="Password"
           pwd={true}
           error={!!errors.password}
         />
-        {errors.password && (
-          <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-        )}
-      </div>
+      </InputWrapper>
 
       {variant === "signup" && (
-        <div className="mb-4">
+        <InputWrapper error={errors.confirmPassword}>
           <InputBox
             variant="input"
             name="ConfirmPassword"
             pwd={true}
             error={!!errors.confirmPassword}
           />
-          {errors.confirmPassword && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.confirmPassword}
-            </p>
-          )}
-        </div>
+        </InputWrapper>
       )}
 
       <Button
@@ -119,160 +240,88 @@ const SignForm = ({
   );
 };
 
-// Validation for modal form
-const validateModalForm = (formData: FormData): FormErrors => {
+const loginSchema = z.object({
+  email: z.string().email("Invalid email id"),
+  password: z.string().min(8, "Password must be longer"),
+});
+
+const signupSchema = loginSchema
+  .extend({
+    username: z.string().min(5, "Username must be longer"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password == data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+const validateForm = <T extends z.ZodTypeAny>(
+  schema: T,
+  formData: Record<string, any>,
+): { data?: z.infer<T>; errors?: FormErrors } => {
   const errors: FormErrors = {};
 
-  const title = formData.get("Title") as string;
-  const type = formData.get("Type") as string;
-  const link = formData.get("Link") as string;
-  const tags = formData.get("Tags") as string;
+  const result = schema.safeParse(formData);
 
-  const modalSchema = z.object({
-    title: z
-      .string()
-      .min(1, "Title is required")
-      .max(20, "Title must be 20 characters or less"),
-    type: z.enum(["tweets", "notion", "video", "documents", "article"], {
-      errorMap: () => ({ message: "Please select a valid type" }),
-    }),
-    link: z.string().min(1, "Link is required").url("Please enter a valid URL"),
-    tags: z.string().min(1, "At least one tag is required"),
-  });
+  if (result.success) {
+    return { data: result.data };
+  }
 
-  // Validate each field individually
-  const fields = [
-    { key: "title", value: title, schema: modalSchema.shape.title },
-    { key: "type", value: type, schema: modalSchema.shape.type },
-    { key: "link", value: link, schema: modalSchema.shape.link },
-    { key: "tags", value: tags, schema: modalSchema.shape.tags },
-  ];
-
-  fields.forEach(({ key, value, schema }) => {
-    try {
-      schema.parse(value);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        errors[key] = err.errors[0]?.message;
-      }
-    }
-  });
-
-  return errors;
+  for (const issue of result.error.errors) {
+    const field = issue.path[0] as string;
+    errors[field] = issue.message;
+  }
+  return { errors };
 };
 
-// Validation for sign in/up form
-const validateSignForm = (
-  formData: FormData,
-  variant: "signin" | "signup",
-): FormErrors => {
-  const errors: FormErrors = {};
-
-  const email = formData.get("Email") as string;
-  const password = formData.get("Password") as string;
-  const confirmPassword = formData.get("ConfirmPassword") as string;
-
-  const signSchema = z.object({
-    email: z
-      .string()
-      .min(1, "Email is required")
-      .email("Please enter a valid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    ...(variant === "signup" && {
-      confirmPassword: z.string().min(1, "Please confirm your password"),
-    }),
-  });
-
-  // Validate email
-  try {
-    signSchema.shape.email.parse(email);
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      errors.email = err.errors[0]?.message;
-    }
-  }
-
-  // Validate password
-  try {
-    signSchema.shape.password.parse(password);
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      errors.password = err.errors[0]?.message;
-    }
-  }
-
-  // For signup, validate confirm password
-  if (variant === "signup") {
-    if (!confirmPassword) {
-      errors.confirmPassword = "Please confirm your password";
-    } else if (password !== confirmPassword) {
-      errors.confirmPassword = "Passwords don't match";
-    }
-  }
-
-  return errors;
+type LoginData = {
+  variant: "signin";
+  email: string;
+  password: string;
 };
 
-export const Form = (props: FormProps) => {
-  const [errors, setErrors] = useState<FormErrors>({});
+type SignupData = {
+  variant: "signup";
+  email: string;
+  password: string;
+  username: string;
+};
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+type authDataProps = LoginData | SignupData;
+type backendResponse = {
+  backendError: boolean;
+  response: string;
+  token?: string;
+};
 
-    // Validate based on form variant
-    let validationErrors: FormErrors = {};
+const signBackendPost = async (
+  authData: authDataProps,
+): Promise<backendResponse> => {
+  let response: any = {};
+  let error = false;
 
-    if (props.variant === "modal") {
-      validationErrors = validateModalForm(formData);
-    } else {
-      validationErrors = validateSignForm(formData, props.variant);
-    }
+  console.log(backend_url);
+  await axios
+    .post(backend_url + authData.variant, {
+      email: authData.email,
+      ...(authData.variant == "signup" && { username: authData.username }),
+      password: authData.password,
+    })
+    .then((res) => {
+      response = res.data;
+    })
+    .catch((err) => {
+      response = err.response?.data || err;
+      error = true;
+    });
 
-    setErrors(validationErrors);
-
-    // If no errors, process the form
-    if (Object.keys(validationErrors).length === 0) {
-      if (props.variant === "modal") {
-        // Process modal form data
-        const processedData = {
-          title: formData.get("Title") as string,
-          type: formData.get("Type") as string,
-          link: formData.get("Link") as string,
-          tags: (formData.get("Tags") as string)
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter((tag) => tag),
-        };
-        console.log("Modal form data:", processedData);
-      } else {
-        // Process sign in/up form data
-        const authData = {
-          email: formData.get("Email") as string,
-          password: formData.get("Password") as string,
-          ...(props.variant === "signup" && {
-            confirmPassword: formData.get("ConfirmPassword") as string,
-          }),
-        };
-        console.log(`${props.variant} form data:`, authData);
-      }
-
-      // Call the onSubmit callback if provided
-      if (props.onSubmit) {
-        props.onSubmit();
-      }
-    } else {
-      console.log("Form has errors:", validationErrors);
-    }
+  return {
+    backendError: error,
+    response: error
+      ? response.message || "Something went wrong"
+      : authData.variant === "signup"
+        ? response.message
+        : "Signin successful",
+    token: !error && authData.variant == "signin" ? response.token : undefined,
   };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      {props.variant === "modal" ? (
-        <ModalForm ref={props.ref} errors={errors} />
-      ) : (
-        <SignForm errors={errors} variant={props.variant} />
-      )}
-    </form>
-  );
 };
