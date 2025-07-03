@@ -1,15 +1,16 @@
 import { InputBox } from "./Input";
 import { Button } from "./Button";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../contexts/contexts";
+import { useAuthContext, useModalContext } from "../hooks/hooks";
 
 type Variants = "modal" | "signup" | "signin";
 
 interface FormProps {
   variant: Variants;
+  onSubmit?: () => void;
 }
 
 interface FormErrors {
@@ -23,14 +24,31 @@ interface formDataProps {
   confirmPassword?: string | null;
 }
 
+type content =
+  | "tweets"
+  | "notion"
+  | "documents"
+  | "article"
+  | "video"
+  | "audio"
+  | "empty";
+
+interface contentDataProps {
+  title: string;
+  type: content;
+  link: string;
+  tags: string[];
+}
+
 const backend_url = import.meta.env.VITE_BACKEND_URL;
 
 export const Form = (props: FormProps) => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState(false);
-  const [token, setToken] = useState("");
+  const [authToken, setAuthToken] = useState("");
   const navigate = useNavigate();
-  const authContext = useContext(AuthContext);
+  const { token, login } = useAuthContext();
+  const { setModal } = useModalContext();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -57,7 +75,41 @@ export const Form = (props: FormProps) => {
           ...data,
           variant: props.variant == "signup" ? "signup" : "signin",
         };
-        const { backendError, response, token } = await signBackendPost(
+        const { backendError, response, backendToken } = await signBackendPost(
+          datawithVariant as authDataProps,
+        );
+        if (backendError) {
+          setErrors({ backend: response });
+        } else {
+          setErrors({});
+          setSuccess(true);
+          if (backendToken) {
+            setAuthToken(backendToken);
+          }
+        }
+      }
+    } else {
+      const contentData: contentDataProps = {
+        title: formData.get("title") as string,
+        type: formData.get("type") as content,
+        link: formData.get("link") as string,
+        tags: (formData.get("tags") as string)
+          .split(",")
+          .map((tag) => tag.trim()),
+      };
+
+      const { data, errors } = validateForm(contentSchema, contentData);
+      console.log("Form submission data:", contentData);
+      console.log("Validation result:", { data, errors });
+      if (errors) {
+        setErrors(errors);
+      } else {
+        const datawithVariant = {
+          ...data,
+          variant: "modal",
+          token: token,
+        };
+        const { backendError, response } = await signBackendPost(
           datawithVariant as authDataProps,
         );
         if (backendError) {
@@ -66,9 +118,6 @@ export const Form = (props: FormProps) => {
         } else {
           setErrors({});
           setSuccess(true);
-          if (token) {
-            setToken(token);
-          }
         }
       }
     }
@@ -76,7 +125,13 @@ export const Form = (props: FormProps) => {
   return (
     <form onSubmit={handleSubmit}>
       {props.variant === "modal" ? (
-        <ModalForm errors={errors} />
+        <ModalForm
+          errors={errors}
+          isSuccess={success}
+          onSuccess={() => {
+            setModal(false);
+          }}
+        />
       ) : (
         <SignForm
           errors={errors}
@@ -88,8 +143,8 @@ export const Form = (props: FormProps) => {
                   navigate("/signin");
                 }
               : () => {
-                  if (token) {
-                    authContext?.login(token);
+                  if (authToken) {
+                    login(authToken);
                   }
                 }
           }
@@ -99,36 +154,43 @@ export const Form = (props: FormProps) => {
   );
 };
 
-const ModalForm = ({ errors }: { errors: FormErrors }) => {
+const ModalForm = ({
+  errors,
+  isSuccess,
+  onSuccess,
+}: {
+  errors: FormErrors;
+  isSuccess: boolean;
+  onSuccess: () => void;
+}) => {
+  useEffect(() => {
+    if (isSuccess && onSuccess) {
+      const timer = setTimeout(() => {
+        onSuccess();
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, onSuccess]);
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <InputBox variant="input" name="Title" error={!!errors.title} />
-        {errors.title && (
-          <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-        )}
-      </div>
+      {errors.backend && <ErrorBanner message={errors.backend} />}
+      {isSuccess && <SuccessBanner message={"Added Content Successfully"} />}
+      <InputWrapper error={errors.title}>
+        <InputBox variant="input" name="title" error={!!errors.title} />
+      </InputWrapper>
 
-      <div>
-        <InputBox variant="options" name="Type" error={!!errors.type} />
-        {errors.type && (
-          <p className="text-red-500 text-sm mt-1">{errors.type}</p>
-        )}
-      </div>
+      <InputWrapper error={errors.type}>
+        <InputBox variant="options" name="type" error={!!errors.type} />
+      </InputWrapper>
 
-      <div>
-        <InputBox variant="input" name="Link" error={!!errors.link} />
-        {errors.link && (
-          <p className="text-red-500 text-sm mt-1">{errors.link}</p>
-        )}
-      </div>
+      <InputWrapper error={errors.link}>
+        <InputBox variant="input" name="link" error={!!errors.link} />
+      </InputWrapper>
 
-      <div>
-        <InputBox variant="tags" name="Tags" error={!!errors.tags} />
-        {errors.tags && (
-          <p className="text-red-500 text-sm mt-1">{errors.tags}</p>
-        )}
-      </div>
+      <InputWrapper error={errors.tags}>
+        <InputBox variant="tags" name="tags" error={!!errors.tags} />
+      </InputWrapper>
 
       <Button variant="primary" size="p-sm" text="Submit" />
     </div>
@@ -255,6 +317,20 @@ const signupSchema = loginSchema
     path: ["confirmPassword"],
   });
 
+const contentSchema = z.object({
+  link: z.string().min(1, "Link is required").url("Please enter a valid URL"),
+  type: z.enum(["tweets", "notion", "audio", "video", "article"], {
+    errorMap: () => ({ message: "Please select a content type" }),
+  }),
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(20, "Maximum limit for title exceeded"),
+  tags: z
+    .array(z.string().min(1, "Tags can't be empty"))
+    .min(1, "At least one tag is required"),
+});
+
 const validateForm = <T extends z.ZodTypeAny>(
   schema: T,
   formData: Record<string, any>,
@@ -287,11 +363,20 @@ type SignupData = {
   username: string;
 };
 
-type authDataProps = LoginData | SignupData;
+type contentData = {
+  variant: "modal";
+  title: string;
+  link: string;
+  type: content;
+  tags: string[];
+  token: string;
+};
+
+type authDataProps = LoginData | SignupData | contentData;
 type backendResponse = {
   backendError: boolean;
   response: string;
-  token?: string;
+  backendToken?: string;
 };
 
 const signBackendPost = async (
@@ -301,19 +386,44 @@ const signBackendPost = async (
   let error = false;
 
   console.log(backend_url);
-  await axios
-    .post(backend_url + authData.variant, {
-      email: authData.email,
-      ...(authData.variant == "signup" && { username: authData.username }),
-      password: authData.password,
-    })
-    .then((res) => {
+  if (authData.variant == "modal") {
+    try {
+      const res = await axios.post(
+        backend_url + "content",
+        {
+          link: authData.link,
+          type: authData.type,
+          title: authData.title,
+          tags: authData.tags,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authData.token}`,
+          },
+        },
+      );
       response = res.data;
-    })
-    .catch((err) => {
-      response = err.response?.data || err;
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        response = err.response?.data || { message: err.message };
+      }
       error = true;
-    });
+    }
+  } else {
+    try {
+      const res = await axios.post(backend_url + authData.variant, {
+        email: authData.email,
+        ...(authData.variant == "signup" && { username: authData.username }),
+        password: authData.password,
+      });
+      response = res.data;
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        response = err.response?.data || { message: err.message };
+      }
+      error = true;
+    }
+  }
 
   return {
     backendError: error,
@@ -322,6 +432,7 @@ const signBackendPost = async (
       : authData.variant === "signup"
         ? response.message
         : "Signin successful",
-    token: !error && authData.variant == "signin" ? response.token : undefined,
+    backendToken:
+      !error && authData.variant == "signin" ? response.token : undefined,
   };
 };

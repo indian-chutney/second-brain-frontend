@@ -46,13 +46,17 @@ type contentcardProps = {
   link: string;
   type: ContentTypes;
   tags: string[];
+  key: string;
 };
 
 type CardProps = emptycardProps | contentcardProps;
 
 export const Card = (props: CardProps) => {
   return (
-    <div className="w-[300px] rounded-[10px] hover:scale-[1.03] transition-transform duration-300 flex flex-col overflow-hidden">
+    <div
+      key={props.variant == "content" ? props.key : "empty"}
+      className="w-[290px] rounded-[10px] hover:scale-[1.03] transition-transform duration-300 flex flex-col overflow-hidden"
+    >
       {props.variant === "empty" ? (
         <>
           <Header type="empty" />
@@ -81,7 +85,7 @@ const EmptyContainer = () => {
           variant="secondary"
           size="s-sm"
           border={true}
-          text="Create New Card"
+          text="Create new content"
           endIcon={<PlusIcon size="sm" />}
           onClick={() => {
             setModal((c) => !c);
@@ -95,7 +99,7 @@ const EmptyContainer = () => {
 const Header = (props: { type: ContentTypes }) => {
   return (
     <>
-      <div className="bg-[#323335] flex items-center justify-center h-[180px]">
+      <div className="bg-[#323335] flex items-center justify-center h-[190px]">
         {iconsMap[props.type]}
       </div>
     </>
@@ -109,7 +113,7 @@ const CardContainer = (props: {
 }) => {
   return (
     <>
-      <div className="bg-btn-dark text-white px-[22px] py-[26px] flex flex-col gap-[20px]">
+      <div className="bg-btn-dark text-white px-[27px] py-[27px] flex flex-col gap-[17px]">
         <div className="text-[21px]">{props.title}</div>
         <ActionButtons link={props.link} />
         <Tags tags={props.tags} />
@@ -133,7 +137,7 @@ const ActionButtons = (props: { link: string }) => {
   };
 
   return (
-    <div className="flex gap-[10px]">
+    <div className="flex w-full justify-between">
       <Button
         variant="secondary"
         size="s-sm"
@@ -165,16 +169,21 @@ const ActionButtons = (props: { link: string }) => {
   );
 };
 
-const Tags = ({ tags }: { tags: string[] }) => {
+type Tag = {
+  _id: string;
+  title: string;
+};
+
+const Tags = ({ tags }: { tags: Tag[] }) => {
   return (
     <div className="flex gap-x-[8px] gap-y-[4px] flex-wrap">
-      {tags.map((tag, index) => (
+      {tags.map((tag) => (
         <Button
-          key={index}
+          key={tag._id}
           variant="secondary"
           size="s-xs"
           border={true}
-          text={"#" + tag}
+          text={"#" + tag.title}
         />
       ))}
     </div>

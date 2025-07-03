@@ -13,9 +13,9 @@ export const DashBoard = (props: { varaint: dashboardType }) => {
     <div>
       {isTabletOrMobile ? <NavBar variant="mobile-dashboard" /> : <SideBar />}
       {props.varaint == "dashboard" ? (
-        <DashboardContent varaint="dashboard" />
+        <DashboardContent variant="dashboard" />
       ) : (
-        <DashboardContent varaint="share" />
+        <DashboardContent variant="share" />
       )}
       <Modal variant="content" />
       <Modal variant="settings" />
