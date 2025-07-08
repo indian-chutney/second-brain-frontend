@@ -6,11 +6,13 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext, useModalContext } from "../hooks/hooks";
 
-type Variants = "modal" | "signup" | "signin";
+type Variants = "modal" | "signup" | "signin" | "changePassword";
 
 interface FormProps {
   variant: Variants;
   onSubmit?: () => void;
+  edit?: boolean;
+  contentId?: string | undefined;
 }
 
 interface FormErrors {
@@ -24,20 +26,19 @@ interface formDataProps {
   confirmPassword?: string | null;
 }
 
-type content =
-  | "tweets"
-  | "notion"
-  | "documents"
-  | "article"
-  | "video"
-  | "audio"
-  | "empty";
+type content = "tweets" | "notion" | "article" | "video" | "other" | "empty";
 
 interface contentDataProps {
   title: string;
   type: content;
   link: string;
   tags: string[];
+}
+
+interface passwordDataProps {
+  password: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 const backend_url = import.meta.env.VITE_BACKEND_URL;
@@ -48,7 +49,7 @@ export const Form = (props: FormProps) => {
   const [authToken, setAuthToken] = useState("");
   const navigate = useNavigate();
   const { token, login } = useAuthContext();
-  const { setModal } = useModalContext();
+  const { setModal, setSetting } = useModalContext();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -73,7 +74,7 @@ export const Form = (props: FormProps) => {
       } else {
         const datawithVariant = {
           ...data,
-          variant: props.variant == "signup" ? "signup" : "signin",
+          variant: props.variant,
         };
         const { backendError, response, backendToken } = await signBackendPost(
           datawithVariant as authDataProps,
@@ -88,7 +89,7 @@ export const Form = (props: FormProps) => {
           }
         }
       }
-    } else {
+    } else if (props.variant == "modal") {
       const contentData: contentDataProps = {
         title: formData.get("title") as string,
         type: formData.get("type") as content,
@@ -97,10 +98,15 @@ export const Form = (props: FormProps) => {
           .split(",")
           .map((tag) => tag.trim()),
       };
-
-      const { data, errors } = validateForm(contentSchema, contentData);
+      let data, errors;
+      if (props.edit) {
+        ({ data, errors } = validateEditForm(contentSchema, contentData));
+      } else {
+        ({ data, errors } = validateForm(contentSchema, contentData));
+      }
       console.log("Form submission data:", contentData);
       console.log("Validation result:", { data, errors });
+      console.log(props.contentId);
       if (errors) {
         setErrors(errors);
       } else {
@@ -108,6 +114,8 @@ export const Form = (props: FormProps) => {
           ...data,
           variant: "modal",
           token: token,
+          ...(props.edit && { edit: props.edit }),
+          ...(props.edit && { contentId: props.contentId }),
         };
         const { backendError, response } = await signBackendPost(
           datawithVariant as authDataProps,
@@ -120,11 +128,35 @@ export const Form = (props: FormProps) => {
           setSuccess(true);
         }
       }
+    } else {
+      const passwordData: passwordDataProps = {
+        password: formData.get("oldPassword") as string,
+        newPassword: formData.get("newPassword") as string,
+        confirmPassword: formData.get("confirmPassword") as string,
+      };
+
+      const { data, errors } = validateForm(passwordSchema, passwordData);
+      if (errors) {
+        setErrors(errors);
+      } else {
+        const backendData = {
+          old_pwd: data?.password as string,
+          new_pwd: data?.confirmPassword as string,
+          token: token as string,
+        };
+        const { response, error } = await changePasswordRequest(backendData);
+        if (error) {
+          setErrors({ backend: response });
+        } else {
+          setErrors({});
+          setSuccess(true);
+        }
+      }
     }
   };
   return (
     <form onSubmit={handleSubmit}>
-      {props.variant === "modal" ? (
+      {props.variant === "modal" && (
         <ModalForm
           errors={errors}
           isSuccess={success}
@@ -132,7 +164,8 @@ export const Form = (props: FormProps) => {
             setModal(false);
           }}
         />
-      ) : (
+      )}
+      {(props.variant === "signin" || props.variant === "signup") && (
         <SignForm
           errors={errors}
           variant={props.variant}
@@ -148,6 +181,16 @@ export const Form = (props: FormProps) => {
                   }
                 }
           }
+        />
+      )}
+
+      {props.variant === "changePassword" && (
+        <ChangePasswordForm
+          errors={errors}
+          isSuccess={success}
+          onSuccess={() => {
+            setSetting(false);
+          }}
         />
       )}
     </form>
@@ -302,6 +345,61 @@ const SignForm = ({
   );
 };
 
+const ChangePasswordForm = ({
+  errors,
+  isSuccess,
+  onSuccess,
+}: {
+  errors: FormErrors;
+  isSuccess: boolean;
+  onSuccess: () => void;
+}) => {
+  useEffect(() => {
+    if (isSuccess && onSuccess) {
+      const timer = setTimeout(() => {
+        onSuccess();
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, onSuccess]);
+
+  return (
+    <div className="flex flex-col gap-6">
+      {errors.backend && <ErrorBanner message={errors.backend} />}
+      {isSuccess && <SuccessBanner message={"Changed Password successfully"} />}
+      <InputWrapper error={errors.password}>
+        <InputBox
+          variant="input"
+          name="oldPassword"
+          pwd={true}
+          error={!!errors.password}
+        />
+      </InputWrapper>
+
+      <InputWrapper error={errors.newPassword}>
+        <InputBox
+          variant="input"
+          name="newPassword"
+          pwd={true}
+          error={!!errors.newPassword}
+        />
+      </InputWrapper>
+
+      <InputWrapper error={errors.confirmPassword}>
+        <InputBox
+          variant="input"
+          name="confirmPassword"
+          pwd={true}
+          error={!!errors.confirmPassword}
+        />
+      </InputWrapper>
+
+      <Button variant="primary" size="p-sm" text="Submit" />
+    </div>
+  );
+};
+
 const loginSchema = z.object({
   email: z.string().email("Invalid email id"),
   password: z.string().min(8, "Password must be longer"),
@@ -319,7 +417,7 @@ const signupSchema = loginSchema
 
 const contentSchema = z.object({
   link: z.string().min(1, "Link is required").url("Please enter a valid URL"),
-  type: z.enum(["tweets", "notion", "audio", "video", "article"], {
+  type: z.enum(["tweets", "notion", "video", "article", "other"], {
     errorMap: () => ({ message: "Please select a content type" }),
   }),
   title: z
@@ -330,6 +428,17 @@ const contentSchema = z.object({
     .array(z.string().min(1, "Tags can't be empty"))
     .min(1, "At least one tag is required"),
 });
+
+const passwordSchema = z
+  .object({
+    password: z.string().min(8, "Enter correct password"),
+    newPassword: z.string().min(8, "Password must be 8 letters long"),
+    confirmPassword: z.string().min(8, "Password must be 8 letters long"),
+  })
+  .refine((data) => data.newPassword == data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 const validateForm = <T extends z.ZodTypeAny>(
   schema: T,
@@ -347,6 +456,55 @@ const validateForm = <T extends z.ZodTypeAny>(
     const field = issue.path[0] as string;
     errors[field] = issue.message;
   }
+  return { errors };
+};
+
+const validateEditForm = <T extends z.ZodObject<any>>(
+  schema: T,
+  formData: Record<string, any>,
+): { data?: z.infer<T>; errors?: FormErrors } => {
+  const errors: FormErrors = {};
+
+  const filteredData = Object.entries(formData).reduce(
+    (acc, [key, value]) => {
+      if (
+        value != "" &&
+        value != null &&
+        value != undefined &&
+        !(Array.isArray(value) && value.length === 0)
+      ) {
+        acc[key] = value;
+      }
+
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
+
+  if (Object.keys(filteredData).length === 0) {
+    return {
+      errors: {
+        input: "no value given",
+      },
+    };
+  }
+
+  const partialSchema = schema.partial();
+
+  const result = partialSchema.safeParse(filteredData);
+
+  if (result.success) {
+    return { data: result.data };
+  }
+
+  for (const issue of result.error.errors) {
+    const field = issue.path[0] as string;
+    // Only add error if the field was actually provided (not filtered out)
+    if (Object.prototype.hasOwnProperty.call(filteredData, field)) {
+      errors[field] = issue.message;
+    }
+  }
+
   return { errors };
 };
 
@@ -370,6 +528,8 @@ type contentData = {
   type: content;
   tags: string[];
   token: string;
+  edit?: boolean;
+  contentId?: string;
 };
 
 type authDataProps = LoginData | SignupData | contentData;
@@ -388,20 +548,38 @@ const signBackendPost = async (
   console.log(backend_url);
   if (authData.variant == "modal") {
     try {
-      const res = await axios.post(
-        backend_url + "content",
-        {
-          link: authData.link,
-          type: authData.type,
-          title: authData.title,
-          tags: authData.tags,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${authData.token}`,
+      let res;
+      if (authData.edit) {
+        res = await axios.put(
+          backend_url + "content/" + authData.contentId,
+          {
+            ...(authData.link && { link: authData.link }),
+            ...(authData.type && { type: authData.type }),
+            ...(authData.title && { title: authData.title }),
+            ...(authData.tags && { tags: authData.tags }),
           },
-        },
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${authData.token}`,
+            },
+          },
+        );
+      } else {
+        res = await axios.post(
+          backend_url + "content",
+          {
+            link: authData.link,
+            type: authData.type,
+            title: authData.title,
+            tags: authData.tags,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${authData.token}`,
+            },
+          },
+        );
+      }
       response = res.data;
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -434,5 +612,40 @@ const signBackendPost = async (
         : "Signin successful",
     backendToken:
       !error && authData.variant == "signin" ? response.token : undefined,
+  };
+};
+
+const changePasswordRequest = async (props: {
+  old_pwd: string;
+  new_pwd: string;
+  token: string;
+}) => {
+  let response: any = {};
+  let error = false;
+
+  try {
+    const res = await axios.post(
+      backend_url + "settings/change_password",
+      {
+        old_pwd: props.old_pwd,
+        new_pwd: props.new_pwd,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${props.token}`,
+        },
+      },
+    );
+    response = res.data.message;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      response = err.response?.data || { message: err.message };
+      error = true;
+    }
+  }
+
+  return {
+    response: response,
+    error: error,
   };
 };

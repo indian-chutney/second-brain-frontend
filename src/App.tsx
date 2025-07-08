@@ -1,27 +1,42 @@
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import "./App.css";
-import { AuthContextProvider, ModalContextProvider } from "./contexts/contexts";
+import {
+  AuthContextProvider,
+  ContentContextProvider,
+  ModalContextProvider,
+  ShareContextProvider,
+} from "./contexts/contexts";
 import { DashBoard } from "./pages/dashboard";
 import { Landing } from "./pages/landing";
 import { SignPage } from "./pages/signin";
 import { useAuthContext } from "./hooks/hooks";
 import { AnimatePresence, motion } from "framer-motion";
+import { Content } from "./pages/content";
+import { HomeLayout } from "./pages/homelayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
   return (
-    <ModalContextProvider>
-      <AuthContextProvider>
+    <AuthContextProvider>
+      <ModalContextProvider>
         <BrowserRouter>
           <AnimatedRoutes />
         </BrowserRouter>
-      </AuthContextProvider>
-    </ModalContextProvider>
+      </ModalContextProvider>
+    </AuthContextProvider>
   );
 }
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const { isAuthenticated } = useAuthContext();
+  const queryClient = new QueryClient();
 
   return (
     <AnimatePresence mode="wait">
@@ -33,25 +48,46 @@ const AnimatedRoutes = () => {
         transition={{ duration: 0.2 }}
       >
         <Routes location={location}>
-          <Route path="/" element={<HomeRedirect />} />
-          <Route path="/signin" element={<SignPage variant="signin" />} />
-          <Route path="/signup" element={<SignPage variant="signup" />} />
+          {!isAuthenticated ? (
+            <>
+              <Route path="/" element={<Landing />} />
+              <Route path="/signin" element={<SignPage variant="signin" />} />
+              <Route path="/signup" element={<SignPage variant="signup" />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </>
+          ) : (
+            <>
+              <Route
+                path="/"
+                element={
+                  <ModalContextProvider>
+                    <QueryClientProvider client={queryClient}>
+                      <ContentContextProvider>
+                        <ShareContextProvider>
+                          <HomeLayout />
+                        </ShareContextProvider>
+                      </ContentContextProvider>
+                    </QueryClientProvider>
+                  </ModalContextProvider>
+                }
+              >
+                <Route index element={<DashBoard varaint="dashboard" />} />
+                <Route path="content/:id" element={<Content />} />
+                <Route
+                  path="share/:id"
+                  element={<DashBoard varaint="share" />}
+                />
+                <Route
+                  path="share/:id/:contentId"
+                  element={<Content variant="shared" />}
+                />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </>
+          )}
         </Routes>
       </motion.div>
     </AnimatePresence>
-  );
-};
-
-const queryClient = new QueryClient();
-
-const HomeRedirect = () => {
-  const { isAuthenticated } = useAuthContext();
-  return isAuthenticated === false ? (
-    <Landing />
-  ) : (
-    <QueryClientProvider client={queryClient}>
-      <DashBoard varaint="dashboard" />
-    </QueryClientProvider>
   );
 };
 

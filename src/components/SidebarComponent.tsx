@@ -3,41 +3,45 @@ import type { ReactElement } from "react";
 import { Notion } from "../assets/notion";
 
 import {
+  AllIcon,
   ArticleIcon,
-  AudioIcon,
-  DocumentIcon,
+  OtherIcon,
   SettingsIcon,
   Tweet,
   VideoIcon,
 } from "../assets/icons";
-import { useModalContext } from "../hooks/hooks";
+import { useContentContext, useModalContext } from "../hooks/hooks";
+import type { Content } from "../contexts/contexts";
 
 const iconsMap: Record<string, ReactElement> = {
+  all: <AllIcon size="md" />,
   tweets: <Tweet size="md" />,
   notion: <Notion size="md" />,
-  document: <DocumentIcon size="md" />,
   article: <ArticleIcon size="md" />,
   video: <VideoIcon size="md" />,
-  audio: <AudioIcon size="md" />,
+  other: <OtherIcon size="md" />,
   settings: <SettingsIcon size="md" />,
 };
 
 type variants =
+  | "all"
   | "tweets"
   | "notion"
-  | "document"
   | "article"
   | "video"
-  | "audio"
-  | "settings";
+  | "settings"
+  | "other";
 
 export const SidebarComponent = (props: { variant: variants }) => {
   const { setSetting } = useModalContext();
+  const { setType } = useContentContext();
   return (
     <div
       className="flex items-center gap-[5px] cursor-pointer"
       onClick={
-        props.variant == "settings" ? () => setSetting((c) => !c) : undefined
+        props.variant == "settings"
+          ? () => setSetting((c) => !c)
+          : () => setType(props.variant as Content)
       }
     >
       {iconsMap[props.variant]}

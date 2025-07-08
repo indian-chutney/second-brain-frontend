@@ -8,6 +8,7 @@ import BackgroundImage from "./../assets/sign_background.png";
 export const SignPage = (props: { variant: "signup" | "signin" }) => {
   const isMobile = useMediaQuery({ query: "(max-width: 460px)" });
   const navigate = useNavigate();
+
   return (
     <>
       {isMobile ? (

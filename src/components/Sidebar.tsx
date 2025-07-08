@@ -2,21 +2,15 @@ import { Logo } from "../assets/icons";
 import { SidebarComponent } from "./SidebarComponent";
 
 export const SideBar = () => {
-  type variants =
-    | "tweets"
-    | "notion"
-    | "document"
-    | "article"
-    | "video"
-    | "audio";
+  type variants = "all" | "tweets" | "notion" | "article" | "video" | "other";
 
   const contentVariant: variants[] = [
+    "all",
     "tweets",
     "article",
     "notion",
-    "document",
     "video",
-    "audio",
+    "other",
   ];
 
   return (

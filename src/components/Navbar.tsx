@@ -80,22 +80,9 @@ const DashNavbar = () => {
 };
 
 const DropDown = () => {
-  type variants =
-    | "tweets"
-    | "notion"
-    | "document"
-    | "article"
-    | "video"
-    | "audio";
+  type variants = "tweets" | "notion" | "article" | "video";
 
-  const contentVariant: variants[] = [
-    "tweets",
-    "article",
-    "notion",
-    "document",
-    "video",
-    "audio",
-  ];
+  const contentVariant: variants[] = ["tweets", "article", "notion", "video"];
 
   return (
     <div className="h-full w-full pt-[100px] overflow-y-auto">

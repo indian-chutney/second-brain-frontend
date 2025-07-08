@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Notion } from "../assets/notion";
 
-import { ArticleIcon, DocumentIcon, Tweet, VideoIcon } from "../assets/icons";
+import { ArticleIcon, LinkIcon, Tweet, VideoIcon } from "../assets/icons";
 
 export const BackgroundLanding = () => {
   const iconsref = useRef<(HTMLDivElement | null)[]>([]);
@@ -58,7 +58,7 @@ export const BackgroundLanding = () => {
         }}
         className={`${defaultStyle} top-1/4 right-50`}
       >
-        <DocumentIcon size="lg" />
+        <LinkIcon size="lg" />
       </div>
       <div
         ref={(el) => {

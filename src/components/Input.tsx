@@ -43,7 +43,7 @@ const OptionInput = (props: StyleProps) => {
   const [selectedValue, setSelectedValue] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const contents = ["tweets", "notion", "video", "documents", "article"];
+  const contents = ["tweets", "notion", "video", "article", "other"];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

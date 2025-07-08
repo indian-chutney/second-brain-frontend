@@ -1,18 +1,32 @@
-import { useMediaQuery } from "react-responsive";
-import { SideBar } from "../components/Sidebar";
-import { NavBar } from "../components/Navbar";
 import { Modal } from "../components/Modal";
 import { Button } from "../components/Button";
 import { BackIcon } from "../assets/icons";
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  useAuthContext,
+  useContentContext,
+  useModalContext,
+} from "../hooks/hooks";
+import { ObjectId } from "bson";
+import axios from "axios";
 
-export const Content = () => {
-  const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
+export const Content = ({ variant }: { variant?: "shared" }) => {
+  const { id } = useParams();
+  const { rootContent } = useContentContext();
+  const { setDeleteModal, setModal } = useModalContext();
+  const { token } = useAuthContext();
+  const navigate = useNavigate();
+
   const key = import.meta.env.VITE_EMBED_KEY;
-  const data = "https://x.com/realDonaldTrump/status/1936573183634645387";
+  const backend_url = import.meta.env.VITE_BACKEND_URL;
+
+  const card = rootContent.find((item) => item._id === id);
   const [imgsrc, setImg] = useState("");
+  const timestamp = new ObjectId(card?._id).getTimestamp();
 
   useEffect(() => {
+    if (!card) return;
     fetch("https://api.linkpreview.net", {
       method: "POST",
       headers: {
@@ -20,7 +34,7 @@ export const Content = () => {
         "X-Linkpreview-Api-Key": key,
       },
       body: new URLSearchParams({
-        q: data,
+        q: card.link,
       }),
     })
       .then((res) => {
@@ -36,63 +50,102 @@ export const Content = () => {
       .catch((err) => {
         console.error("Fetch error:", err);
       });
-  }, []);
+  }, [card]);
+
+  const deleteContent = async () => {
+    await axios.delete(backend_url + "content/" + id, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    setDeleteModal(false);
+    navigate("/");
+  };
 
   return (
     <>
-      <div>
-        {isTabletOrMobile ? <NavBar variant="mobile-dashboard" /> : <SideBar />}
-        <div className="flex flex-col tab:ml-[377px] flex-1 -space-y-7">
-          <div className="flex w-full justify-start items-center pl-[40px] bg-bd-silver h-[160px]">
+      <div className="flex flex-col tab:ml-[377px] flex-1 -space-y-7 mt-[60px] tab:mt-0">
+        <div className="flex w-full justify-start items-center pl-[5px] tab:pl-[40px] bg-bd-silver h-[160px]">
+          <Button
+            variant="secondary"
+            size="s-ico"
+            startIcon={<BackIcon size="md" />}
+            onClick={() => navigate(-1)}
+          />
+        </div>
+        <div className="flex justify-between pl-[40px] tab:pl-[100px] tab:pr-[40px]">
+          <p className="text-white text-[40px] tab:text-[48px] font-semibold -mt-1 tab:-mt-2 ">
+            {card?.title}
+          </p>
+          <div className="flex gap-[10px]">
             <Button
               variant="secondary"
-              size="s-ico"
-              startIcon={<BackIcon size="md" />}
+              size="s-md"
+              text="Edit"
+              onClick={() => setModal(true)}
+            />
+            <Button
+              variant="secondary"
+              size="s-md"
+              text="Delete"
+              onClick={() => setDeleteModal(true)}
             />
           </div>
-          <div className="flex justify-between pl-[100px] pr-[40px]">
-            <p className="text-white text-[48px] font-semibold -mt-2 ">
-              Trump's Tweet
+        </div>
+        <div className="flex flex-col mt-10 pl-[30px] tab:pl-[100px] text-white">
+          <div className="flex mt-6 tab:mt-10 bg-bd-silver w-[370px] tab:w-[450px] h-[220px] tab:h-[280px] rounded-[10px] justify-center items-center">
+            <img
+              className="w-[315px] tab:w-[380px] h-[160px] tab:h-[200px] object-cover rounded-[10px] cursor-pointer"
+              src={imgsrc}
+              alt="broken"
+              onClick={() =>
+                window.open(card?.link, "_blank", "noopener,noreferrer")
+              }
+            />
+          </div>
+          <div className="flex justify-start mt-[50px] gap-[10px] items-center">
+            <p className="text-white font-semibold text-[20px] tab:text-[25px]">
+              Tags
             </p>
             <div className="flex gap-[10px]">
-              <Button variant="secondary" size="s-md" text="Edit" />
-              <Button variant="secondary" size="s-md" text="Delete" />
+              {card?.tags.map((c) => (
+                <Button
+                  variant="secondary"
+                  size="s-xs"
+                  text={"# " + c?.title}
+                />
+              ))}
             </div>
           </div>
-          <div className="flex flex-col mt-10 pl-[100px] text-white">
-            <div className="flex mt-10 bg-bd-silver w-[400px] rounded-[10px] justify-center items-center">
-              <img
-                className="w-[300px] py-[50px] rounded-[10px] cursor-pointer"
-                src={imgsrc}
-                alt="broken"
-                onClick={() =>
-                  window.open(data, "_blank", "noopener,noreferrer")
-                }
+          <div className="flex justify-start mt-[30px] gap-[10px] items-center">
+            <p className="text-white font-semibold text-[20px] tab:text-[25px]">
+              Created On
+            </p>
+            <div>
+              <Button
+                variant="secondary"
+                size="s-xs"
+                text={timestamp.toISOString()}
               />
             </div>
-            <div className="flex justify-start mt-[50px] gap-[10px] items-center">
-              <p className="text-white font-semibold text-[25px]">Tags:</p>
-              <div className="flex gap-[10px]">
-                <Button variant="secondary" size="s-xs" text="# poltics" />
-                <Button variant="secondary" size="s-xs" text="# geopolitics" />
-              </div>
-            </div>
-            <div className="flex justify-start mt-[30px] gap-[10px] items-center">
-              <p className="text-white font-semibold text-[25px]">Created On</p>
-              <div>
-                <Button variant="secondary" size="s-xs" text="18 Jun 2025" />
-              </div>
-            </div>
-            <div className="flex justify-start my-[30px] gap-[10px] items-center">
-              <p className="text-white font-semibold text-[25px]">Created By</p>
-              <div>
-                <Button variant="secondary" size="s-xs" text="@ Raju" />
-              </div>
+          </div>
+          <div className="flex justify-start my-[30px] gap-[10px] items-center">
+            <p className="text-white font-semibold text-[20px] tab:text-[25px]">
+              Created By
+            </p>
+            <div>
+              <Button
+                variant="secondary"
+                size="s-xs"
+                text={"@" + card?.userid.username}
+              />
             </div>
           </div>
         </div>
       </div>
       <Modal variant="settings" />
+      <Modal variant="delete" onSubmit={deleteContent} />
+      <Modal variant="content" edit={true} contentId={id} />
     </>
   );
 };

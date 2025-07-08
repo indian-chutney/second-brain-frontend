@@ -1,25 +1,24 @@
 import { Modal } from "../components/Modal";
-import { SideBar } from "../components/Sidebar";
-import { useMediaQuery } from "react-responsive";
-import { NavBar } from "../components/Navbar";
 import { DashboardContent } from "../components/DashBoardContent";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 type dashboardType = "dashboard" | "share";
 
-export const DashBoard = (props: { varaint: dashboardType }) => {
-  const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
+const queryClient = new QueryClient();
 
+export const DashBoard = (props: { varaint: dashboardType }) => {
   return (
     <div>
-      {isTabletOrMobile ? <NavBar variant="mobile-dashboard" /> : <SideBar />}
       {props.varaint == "dashboard" ? (
-        <DashboardContent variant="dashboard" />
+        <QueryClientProvider client={queryClient}>
+          <DashboardContent variant="dashboard" />
+          <Modal variant="content" />
+        </QueryClientProvider>
       ) : (
         <DashboardContent variant="share" />
       )}
-      <Modal variant="content" />
+
       <Modal variant="settings" />
-      <Modal variant="delete" />
     </div>
   );
 };

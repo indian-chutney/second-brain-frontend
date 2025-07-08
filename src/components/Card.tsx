@@ -4,49 +4,52 @@ import { Notion } from "../assets/notion";
 import { Button } from "./Button";
 import {
   Tweet,
-  DocumentIcon,
   ArticleIcon,
   VideoIcon,
-  AudioIcon,
   LinkIcon,
   CopyIcon,
   CopiedIcon,
   OptionsIcon,
   EmptyIcon,
   PlusIcon,
+  OtherIcon,
 } from "../assets/icons";
 import { useModalContext } from "../hooks/hooks";
+import { useNavigate } from "react-router-dom";
 
 type ContentTypes =
   | "tweets"
   | "notion"
-  | "documents"
   | "article"
   | "video"
-  | "audio"
+  | "other"
   | "empty";
 
 const iconsMap: Record<ContentTypes, ReactElement> = {
   tweets: <Tweet size="lg" />,
   notion: <Notion size="lg" />,
-  documents: <DocumentIcon size="lg" />,
   article: <ArticleIcon size="lg" />,
   video: <VideoIcon size="lg" />,
-  audio: <AudioIcon size="lg" />,
   empty: <EmptyIcon size="lg" />,
+  other: <OtherIcon size="lg" />,
 };
 
 type emptycardProps = {
   variant: "empty";
 };
 
+type Tag = {
+  _id: string;
+  title: string;
+};
+
 type contentcardProps = {
+  _id: string;
   title: string;
   variant: "content";
   link: string;
   type: ContentTypes;
-  tags: string[];
-  key: string;
+  tags: Tag[];
 };
 
 type CardProps = emptycardProps | contentcardProps;
@@ -54,8 +57,8 @@ type CardProps = emptycardProps | contentcardProps;
 export const Card = (props: CardProps) => {
   return (
     <div
-      key={props.variant == "content" ? props.key : "empty"}
-      className="w-[290px] rounded-[10px] hover:scale-[1.03] transition-transform duration-300 flex flex-col overflow-hidden"
+      key={props.variant == "content" ? props._id : "empty"}
+      className="w-[300px] rounded-[10px] hover:scale-[1.03] transition-transform duration-300 flex flex-col overflow-hidden"
     >
       {props.variant === "empty" ? (
         <>
@@ -69,6 +72,7 @@ export const Card = (props: CardProps) => {
             title={props.title}
             link={props.link}
             tags={props.tags}
+            id={props._id}
           />
         </>
       )}
@@ -109,22 +113,23 @@ const Header = (props: { type: ContentTypes }) => {
 const CardContainer = (props: {
   title: string;
   link: string;
-  tags: string[];
+  tags: Tag[];
+  id: string;
 }) => {
   return (
     <>
       <div className="bg-btn-dark text-white px-[27px] py-[27px] flex flex-col gap-[17px]">
         <div className="text-[21px]">{props.title}</div>
-        <ActionButtons link={props.link} />
+        <ActionButtons link={props.link} id={props.id} />
         <Tags tags={props.tags} />
       </div>
     </>
   );
 };
 
-const ActionButtons = (props: { link: string }) => {
+const ActionButtons = (props: { link: string; id: string }) => {
   const [isCopied, setCopied] = useState(false);
-  const { deleteModal, setDeleteModal } = useModalContext();
+  const navigate = useNavigate();
 
   const handleCopy = async () => {
     try {
@@ -137,7 +142,7 @@ const ActionButtons = (props: { link: string }) => {
   };
 
   return (
-    <div className="flex w-full justify-between">
+    <div className="flex gap-[10px]">
       <Button
         variant="secondary"
         size="s-sm"
@@ -161,17 +166,11 @@ const ActionButtons = (props: { link: string }) => {
         border={true}
         startIcon={<OptionsIcon size="sm" />}
         onClick={() => {
-          setDeleteModal((c) => !c);
-          console.log(deleteModal);
+          navigate("/content/" + props.id);
         }}
       />
     </div>
   );
-};
-
-type Tag = {
-  _id: string;
-  title: string;
 };
 
 const Tags = ({ tags }: { tags: Tag[] }) => {

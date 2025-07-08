@@ -1,10 +1,9 @@
 import {
   OpenNewWindow,
   Book,
-  Microphone,
   PasteClipboard,
   ClipboardCheck,
-  GoogleDrive,
+  Link,
   Trash,
   MoreHoriz,
   Menu,
@@ -18,6 +17,8 @@ import {
   Settings,
   ProfileCircle,
   ArrowLeft,
+  ViewGrid,
+  ShareAndroidSolid,
 } from "iconoir-react";
 import { IconSizeVariants, type IconProps } from ".";
 
@@ -44,16 +45,6 @@ export const ArticleIcon = (props: IconProps) => {
   );
 };
 
-export const AudioIcon = (props: IconProps) => {
-  return (
-    <Microphone
-      height={IconSizeVariants[props.size]}
-      width={IconSizeVariants[props.size]}
-      color={secondcolor}
-    />
-  );
-};
-
 export const CopyIcon = (props: IconProps) => {
   return (
     <PasteClipboard
@@ -71,16 +62,6 @@ export const CopiedIcon = (props: IconProps) => {
       width={IconSizeVariants[props.size]}
       color={"#ffffff"}
       strokeWidth={"1.9"}
-    />
-  );
-};
-
-export const DocumentIcon = (props: IconProps) => {
-  return (
-    <GoogleDrive
-      height={IconSizeVariants[props.size]}
-      width={IconSizeVariants[props.size]}
-      color={secondcolor}
     />
   );
 };
@@ -212,6 +193,36 @@ export const BackIcon = (props: IconProps) => {
       height={IconSizeVariants[props.size]}
       width={IconSizeVariants[props.size]}
       color={secondcolor}
+    />
+  );
+};
+
+export const AllIcon = (props: IconProps) => {
+  return (
+    <ViewGrid
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const OtherIcon = (props: IconProps) => {
+  return (
+    <Link
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
+    />
+  );
+};
+
+export const ShareIcon2 = (props: IconProps) => {
+  return (
+    <ShareAndroidSolid
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={"#ffffff"}
     />
   );
 };

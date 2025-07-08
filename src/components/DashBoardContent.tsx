@@ -2,55 +2,25 @@ import { useMediaQuery } from "react-responsive";
 import { PlusIcon } from "../assets/icons";
 import { Button } from "./Button";
 import { Card } from "./Card";
-import { useAuthContext, useModalContext } from "../hooks/hooks";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import {
+  useContentContext,
+  useModalContext,
+  useShareContext,
+} from "../hooks/hooks";
 
 type DashboardType = "dashboard" | "share";
 
-type CardProps = {
-  id: string;
-  link: string;
-  title: string;
-  type:
-    | "tweets"
-    | "notion"
-    | "documents"
-    | "article"
-    | "video"
-    | "audio"
-    | "empty";
-  tags: string[];
-};
-
 export const DashboardContent = (props: { variant: DashboardType }) => {
-  const [content, setContent] = useState<CardProps[]>([]);
   const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
   const { setModal } = useModalContext();
-  const authContext = useAuthContext();
-  const { data, error } = useQuery({
-    queryKey: ["cards"],
-    queryFn: () => {
-      if (!authContext.token) throw new Error("No token");
-      return fetchCards(authContext.token);
-    },
-    enabled: !!authContext.token,
-    refetchInterval: 1000,
-  });
 
-  useEffect(() => {
-    if (data) {
-      setContent(data.content || data);
-    }
-  }, [data]);
+  const { rootContent } = useContentContext();
 
-  if (error) {
-    console.log(error);
-  }
+  const { shareContent } = useShareContext();
 
+  const contentToRender = props.variant == "share" ? shareContent : rootContent;
   return (
-    <div className="flex flex-col tab:ml-[377px] pt-[120px] tab:pt-[47px] flex-1">
+    <div className="flex flex-col tab:ml-[377px] pt-[120px] tab:pt-[47px] flex-1 mb-[30px]">
       {props.variant == "dashboard" && (
         <div className="flex justify-between items-center w-full px-[30px] tab:px-[70px]">
           <p className="text-white font-semibold text-[25px]">All Notes</p>
@@ -65,16 +35,22 @@ export const DashboardContent = (props: { variant: DashboardType }) => {
       )}
       {props.variant == "share" && (
         <div className="flex justify-between items-center w-full px-[30px] tab:px-[70px]">
-          <p className="text-white font-semibold text-[25px]">@Raju Notes</p>
+          <p className="text-white font-semibold text-[25px]">{`@${contentToRender[0].userid.username}'s Notes`}</p>
         </div>
       )}
       <div className="flex flex-wrap items-start justify-start gap-[50px] pl-[70px] pt-[54px]">
-        {content?.length === 0 && <Card variant="empty" />}
-        {content?.length > 0 &&
-          content.map((card) => (
+        {contentToRender?.length === 0 &&
+          (props.variant === "share" ? (
+            <p className="text-white text-lg">No Content Uploaded</p>
+          ) : (
+            <Card variant="empty" />
+          ))}
+        {contentToRender?.length > 0 &&
+          contentToRender.map((card) => (
             <Card
+              _id={card._id}
               variant="content"
-              key={card.id}
+              key={card._id}
               link={card.link}
               title={card.title}
               type={card.type}
@@ -84,15 +60,4 @@ export const DashboardContent = (props: { variant: DashboardType }) => {
       </div>
     </div>
   );
-};
-
-const fetchCards = async (token: string) => {
-  const backend_url = import.meta.env.VITE_BACKEND_URL;
-  const res = await axios.get(backend_url + "content", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return res.data;
 };
