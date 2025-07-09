@@ -75,10 +75,9 @@ export const Form = (props: FormProps) => {
         const datawithVariant = {
           ...data,
           variant: props.variant,
-        };
-        const { backendError, response, backendToken } = await signBackendPost(
-          datawithVariant as authDataProps,
-        );
+        } as authDataProps;
+        const { backendError, response, backendToken } =
+          await signBackendPost(datawithVariant);
         if (backendError) {
           setErrors({ backend: response });
         } else {
@@ -113,13 +112,12 @@ export const Form = (props: FormProps) => {
         const datawithVariant = {
           ...data,
           variant: "modal",
-          token: token,
+          token: token as string,
           ...(props.edit && { edit: props.edit }),
           ...(props.edit && { contentId: props.contentId }),
-        };
-        const { backendError, response } = await signBackendPost(
-          datawithVariant as authDataProps,
-        );
+        } as authDataProps;
+        const { backendError, response } =
+          await signBackendPost(datawithVariant);
         if (backendError) {
           setErrors({ backend: response });
           console.log(errors);
@@ -442,7 +440,7 @@ const passwordSchema = z
 
 const validateForm = <T extends z.ZodTypeAny>(
   schema: T,
-  formData: Record<string, any>,
+  formData: object,
 ): { data?: z.infer<T>; errors?: FormErrors } => {
   const errors: FormErrors = {};
 
@@ -459,26 +457,26 @@ const validateForm = <T extends z.ZodTypeAny>(
   return { errors };
 };
 
-const validateEditForm = <T extends z.ZodObject<any>>(
-  schema: T,
-  formData: Record<string, any>,
-): { data?: z.infer<T>; errors?: FormErrors } => {
+const validateEditForm = <T extends z.ZodRawShape>(
+  schema: z.ZodObject<T>,
+  formData: Partial<z.infer<typeof schema>>,
+): { data?: z.infer<typeof schema>; errors?: FormErrors } => {
   const errors: FormErrors = {};
 
   const filteredData = Object.entries(formData).reduce(
     (acc, [key, value]) => {
       if (
-        value != "" &&
-        value != null &&
-        value != undefined &&
+        value !== "" &&
+        value !== null &&
+        value !== undefined &&
         !(Array.isArray(value) && value.length === 0)
       ) {
-        acc[key] = value;
+        acc[key as keyof typeof schema.shape] = value;
       }
 
       return acc;
     },
-    {} as Record<string, any>,
+    {} as Partial<z.infer<typeof schema>>,
   );
 
   if (Object.keys(filteredData).length === 0) {
@@ -542,10 +540,6 @@ type backendResponse = {
 const signBackendPost = async (
   authData: authDataProps,
 ): Promise<backendResponse> => {
-  let response: any = {};
-  let error = false;
-
-  console.log(backend_url);
   if (authData.variant == "modal") {
     try {
       let res;
@@ -580,12 +574,16 @@ const signBackendPost = async (
           },
         );
       }
-      response = res.data;
+      return {
+        backendError: false,
+        response: res.data.message,
+      };
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        response = err.response?.data || { message: err.message };
+        const data = err.response?.data;
+        return { backendError: true, response: data || err.message };
       }
-      error = true;
+      return { backendError: true, response: "Unknown error" };
     }
   } else {
     try {
@@ -594,35 +592,31 @@ const signBackendPost = async (
         ...(authData.variant == "signup" && { username: authData.username }),
         password: authData.password,
       });
-      response = res.data;
+      return {
+        backendError: false,
+        response: res.data.message,
+        ...(authData.variant === "signin" && { backendToken: res.data.token }),
+      };
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        response = err.response?.data || { message: err.message };
+        const data = err.response?.data;
+        return { backendError: true, response: data || err.message };
       }
-      error = true;
+      return { backendError: true, response: "Unknown error" };
     }
   }
+};
 
-  return {
-    backendError: error,
-    response: error
-      ? response.message || "Something went wrong"
-      : authData.variant === "signup"
-        ? response.message
-        : "Signin successful",
-    backendToken:
-      !error && authData.variant == "signin" ? response.token : undefined,
-  };
+type passwordResponse = {
+  response: string;
+  error: boolean;
 };
 
 const changePasswordRequest = async (props: {
   old_pwd: string;
   new_pwd: string;
   token: string;
-}) => {
-  let response: any = {};
-  let error = false;
-
+}): Promise<passwordResponse> => {
   try {
     const res = await axios.post(
       backend_url + "settings/change_password",
@@ -636,16 +630,12 @@ const changePasswordRequest = async (props: {
         },
       },
     );
-    response = res.data.message;
+    return { response: res.data.message, error: false };
   } catch (err) {
     if (axios.isAxiosError(err)) {
-      response = err.response?.data || { message: err.message };
-      error = true;
+      const data = err.response?.data;
+      return { response: data || err.message, error: true };
     }
+    return { response: "Unknown error", error: true };
   }
-
-  return {
-    response: response,
-    error: error,
-  };
 };

@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import React, { type ReactElement } from "react";
 
 import { Notion } from "../assets/notion";
 
@@ -10,8 +10,8 @@ import {
   Tweet,
   VideoIcon,
 } from "../assets/icons";
-import { useContentContext, useModalContext } from "../hooks/hooks";
-import type { Content } from "../contexts/contexts";
+import { useModalContext } from "../hooks/hooks";
+import { type Content } from "../contexts/contexts";
 
 const iconsMap: Record<string, ReactElement> = {
   all: <AllIcon size="md" />,
@@ -32,16 +32,18 @@ type variants =
   | "settings"
   | "other";
 
-export const SidebarComponent = (props: { variant: variants }) => {
+export const SidebarComponent = (props: {
+  variant: variants;
+  setType: React.Dispatch<React.SetStateAction<Content>>;
+}) => {
   const { setSetting } = useModalContext();
-  const { setType } = useContentContext();
   return (
     <div
       className="flex items-center gap-[5px] cursor-pointer"
       onClick={
         props.variant == "settings"
           ? () => setSetting((c) => !c)
-          : () => setType(props.variant as Content)
+          : () => props.setType?.(props.variant as Content)
       }
     >
       {iconsMap[props.variant]}

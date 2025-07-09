@@ -5,6 +5,7 @@ import {
   ModalContext,
   ShareContext,
 } from "../contexts/contexts";
+import { useLocation } from "react-router-dom";
 
 export const useModalContext = () => {
   const content = useContext(ModalContext);
@@ -38,3 +39,11 @@ export const useShareContext = () => {
   }
   return share;
 };
+
+export function useCorrectSetType() {
+  const content = useContentContext();
+  const share = useShareContext();
+  const location = useLocation();
+  const isShare = location.pathname.startsWith("/share");
+  return isShare ? share?.setType : content.setType;
+}

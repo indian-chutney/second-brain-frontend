@@ -1,5 +1,7 @@
+import { useContext } from "react";
 import { Logo } from "../assets/icons";
 import { SidebarComponent } from "./SidebarComponent";
+import { ContentContext, ShareContext } from "../contexts/contexts";
 
 export const SideBar = () => {
   type variants = "all" | "tweets" | "notion" | "article" | "video" | "other";
@@ -13,16 +15,25 @@ export const SideBar = () => {
     "other",
   ];
 
+  const ShareCtx = useContext(ShareContext);
+  const ContentCtx = useContext(ContentContext);
+
+  const setType = ShareCtx ? ShareCtx.setType : ContentCtx!.setType;
+
   return (
     <div className="h-full w-[377px] flex flex-col pl-[50px] pt-[52px] bg-back-dark border border-solid border-r-bd-silver fixed top-0 left-0">
       <Header />
       <nav className="pt-[56px] flex flex-col gap-[40px] flex-1">
         {contentVariant.map((content) => (
-          <SidebarComponent variant={content} key={content} />
+          <SidebarComponent variant={content} key={content} setType={setType} />
         ))}
       </nav>
       <div className="pb-[52px]">
-        <SidebarComponent variant="settings" key={"settings"} />
+        <SidebarComponent
+          variant="settings"
+          key={"settings"}
+          setType={setType}
+        />
       </div>
     </div>
   );

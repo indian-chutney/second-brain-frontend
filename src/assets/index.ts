@@ -1,8 +1,10 @@
+type sizes = "sm" | "md" | "navbar" | "mob" | "lg" | "logo" | "xl";
+
 export interface IconProps {
-  size: "sm" | "md" | "lg" | "xl" | "logo" | "mob" | "nav";
+  size: sizes;
 }
 
-export const IconSizeVariants = {
+export const IconSizeVariants: Record<sizes, string> = {
   sm: "20px",
   md: "25px",
   navbar: "30px",

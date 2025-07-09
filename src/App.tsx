@@ -22,21 +22,23 @@ import { HomeLayout } from "./pages/homelayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
+  const queryClient = new QueryClient();
   return (
-    <AuthContextProvider>
-      <ModalContextProvider>
-        <BrowserRouter>
-          <AnimatedRoutes />
-        </BrowserRouter>
-      </ModalContextProvider>
-    </AuthContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthContextProvider>
+        <ModalContextProvider>
+          <BrowserRouter>
+            <AnimatedRoutes />
+          </BrowserRouter>
+        </ModalContextProvider>
+      </AuthContextProvider>
+    </QueryClientProvider>
   );
 }
 
 const AnimatedRoutes = () => {
   const location = useLocation();
   const { isAuthenticated } = useAuthContext();
-  const queryClient = new QueryClient();
 
   return (
     <AnimatePresence mode="wait">
@@ -57,29 +59,35 @@ const AnimatedRoutes = () => {
             </>
           ) : (
             <>
+              {/* Dashboard and other non-share routes use ContentContextProvider */}
               <Route
                 path="/"
                 element={
-                  <QueryClientProvider client={queryClient}>
-                    <ContentContextProvider>
-                      <ShareContextProvider>
-                        <HomeLayout />
-                      </ShareContextProvider>
-                    </ContentContextProvider>
-                  </QueryClientProvider>
+                  <ContentContextProvider>
+                    <HomeLayout />
+                  </ContentContextProvider>
                 }
               >
-                <Route index element={<DashBoard varaint="dashboard" />} />
+                <Route index element={<DashBoard variant="dashboard" />} />
                 <Route path="content/:id" element={<Content />} />
+              </Route>
+
+              {/* Share routes use ShareContextProvider */}
+              <Route
+                path="/share"
+                element={
+                  <ShareContextProvider>
+                    <HomeLayout />
+                  </ShareContextProvider>
+                }
+              >
+                <Route path=":id" element={<DashBoard variant="share" />} />
                 <Route
-                  path="share/:id"
-                  element={<DashBoard varaint="share" />}
-                />
-                <Route
-                  path="share/:id/:contentId"
+                  path=":id/:contentId"
                   element={<Content variant="shared" />}
                 />
               </Route>
+
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}

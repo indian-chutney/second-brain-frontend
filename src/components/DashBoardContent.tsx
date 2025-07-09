@@ -9,27 +9,41 @@ import {
 } from "../hooks/hooks";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
+import type { ContentItem } from "../contexts/contexts";
 
 type DashboardType = "dashboard" | "share";
 
 export const DashboardContent = (props: { variant: DashboardType }) => {
+  return (
+    <>{props.variant === "dashboard" ? <DashBoardLogic /> : <ShareLogic />}</>
+  );
+};
+
+const ShareLogic = () => {
+  const { shareContent, setHash } = useShareContext();
+  const { id } = useParams();
+  useEffect(() => {
+    if (id !== undefined) {
+      setHash(id);
+    }
+  }, [id, setHash]);
+  return <DashBoardUI variant="share" content={shareContent} />;
+};
+
+const DashBoardLogic = () => {
+  const { rootContent } = useContentContext();
+  return <DashBoardUI variant="dashboard" content={rootContent} />;
+};
+
+const DashBoardUI = (props: {
+  variant: DashboardType;
+  content: ContentItem[];
+}) => {
   const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
   const { setModal } = useModalContext();
   const navigate = useNavigate();
 
-  const { rootContent } = useContentContext();
-
-  const { shareContent, setHash } = useShareContext();
-
-  const { id } = useParams();
-  useEffect(() => {
-    if (props.variant === "share" && id !== undefined) {
-      setHash(id);
-    }
-  }, [id, props.variant, setHash]);
-
-  const contentToRender = props.variant == "share" ? shareContent : rootContent;
-  console.log(contentToRender);
+  const contentToRender = props.content;
   return (
     <div className="flex flex-col tab:ml-[377px] pt-[120px] tab:pt-[47px] flex-1 mb-[30px]">
       {props.variant == "dashboard" && (

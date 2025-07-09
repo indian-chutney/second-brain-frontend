@@ -139,6 +139,7 @@ export const ContentContextProvider = ({ children }: ProviderProps) => {
 type ShareContextProps = {
   shareContent: ContentItem[];
   setHash: React.Dispatch<React.SetStateAction<string>>;
+  setType: React.Dispatch<React.SetStateAction<Content>>;
 };
 
 export const ShareContext = createContext<ShareContextProps | null>(null);
@@ -146,35 +147,30 @@ export const ShareContext = createContext<ShareContextProps | null>(null);
 export const ShareContextProvider = ({ children }: ProviderProps) => {
   const [shareContent, setShareContent] = useState<ContentItem[]>([]);
   const [hash, setHash] = useState("");
+  const [type, setType] = useState<Content>("all");
   const { token } = useAuthContext();
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchData = async () => {
-      try {
-        const response = await fetchShareCards(token as string, hash);
-        if (isMounted) {
-          setShareContent(response.content || []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch share content:", error);
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [token, hash]);
+  const { data } = useQuery({
+    queryKey: ["cards"],
+    queryFn: () => {
+      if (!token) throw new Error("No token");
+      return fetchShareCards(token, hash);
+    },
+    enabled: !!hash,
+  });
 
   useEffect(() => {
-    console.log(shareContent);
-  }, [shareContent]);
+    if (data) {
+      const filtered =
+        type === "all"
+          ? data.content
+          : data.content.filter((c: ContentItem) => c.type === type);
+      setShareContent(filtered);
+    }
+  }, [data, type]);
 
   return (
-    <ShareContext.Provider value={{ shareContent, setHash }}>
+    <ShareContext.Provider value={{ shareContent, setHash, setType }}>
       {children}
     </ShareContext.Provider>
   );

@@ -1,21 +1,18 @@
 import { Modal } from "../components/Modal";
 import { Button } from "../components/Button";
 import { BackIcon } from "../assets/icons";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  useAuthContext,
-  useContentContext,
-  useModalContext,
-  useShareContext,
-} from "../hooks/hooks";
+import { useAuthContext, useModalContext } from "../hooks/hooks";
 import { ObjectId } from "bson";
 import axios from "axios";
+import { ContentContext, ShareContext } from "../contexts/contexts";
 
 export const Content = ({ variant }: { variant?: "shared" }) => {
   const { id, contentId } = useParams();
-  const { rootContent } = useContentContext();
-  const { shareContent } = useShareContext();
+  const cardId = variant === "shared" ? contentId : id;
+  const ContentCtx = useContext(ContentContext);
+  const ShareCtx = useContext(ShareContext);
 
   const { setDeleteModal, setModal } = useModalContext();
   const { token } = useAuthContext();
@@ -24,14 +21,15 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
   const key = import.meta.env.VITE_EMBED_KEY;
   const backend_url = import.meta.env.VITE_BACKEND_URL;
 
-  let card;
-  if (variant != "shared") {
-    card = rootContent.find((item) => item._id === id);
-  } else {
-    card = shareContent.find((item) => item._id === contentId);
-    console.log(shareContent);
-    console.log(card);
+  const contentToRender = ShareCtx
+    ? ShareCtx!.shareContent
+    : ContentCtx?.rootContent;
+
+  if (contentToRender === undefined) {
+    throw Error("null contentToRender");
   }
+  const card = contentToRender.find((item) => item._id === cardId);
+
   const [imgsrc, setImg] = useState("");
   const timestamp = new ObjectId(card?._id).getTimestamp();
 
@@ -86,7 +84,7 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
         <div className="flex justify-between pl-[40px] tab:pl-[100px] tab:pr-[40px]">
           <p className="text-white text-[40px] tab:text-[48px] font-semibold -mt-1 tab:-mt-2 ">
             {card?.title}
-          </p>{" "}
+          </p>
           {variant != "shared" && (
             <div className="flex gap-[10px]">
               <Button
