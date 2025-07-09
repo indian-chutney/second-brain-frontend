@@ -14,8 +14,8 @@ import {
   PlusIcon,
   OtherIcon,
 } from "../assets/icons";
-import { useModalContext } from "../hooks/hooks";
-import { useNavigate } from "react-router-dom";
+import { useModalContext, useShareContext } from "../hooks/hooks";
+import { useLocation, useNavigate } from "react-router-dom";
 
 type ContentTypes =
   | "tweets"
@@ -130,6 +130,8 @@ const CardContainer = (props: {
 const ActionButtons = (props: { link: string; id: string }) => {
   const [isCopied, setCopied] = useState(false);
   const navigate = useNavigate();
+  const { shareContent } = useShareContext();
+  const location = useLocation();
 
   const handleCopy = async () => {
     try {
@@ -166,7 +168,11 @@ const ActionButtons = (props: { link: string; id: string }) => {
         border={true}
         startIcon={<OptionsIcon size="sm" />}
         onClick={() => {
-          navigate("/content/" + props.id);
+          if (shareContent.length == 0) {
+            navigate("/content/" + props.id);
+          } else {
+            navigate(location.pathname + "/" + props.id);
+          }
         }}
       />
     </div>

@@ -117,7 +117,6 @@ export const ContentContextProvider = ({ children }: ProviderProps) => {
       return fetchCards(authContext.token);
     },
     enabled: !!authContext.token,
-    refetchInterval: 1000,
   });
 
   useEffect(() => {
@@ -150,17 +149,29 @@ export const ShareContextProvider = ({ children }: ProviderProps) => {
   const { token } = useAuthContext();
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
-        const content = await fetchShareCards(token as string, hash);
-        setShareContent(content);
+        const response = await fetchShareCards(token as string, hash);
+        if (isMounted) {
+          setShareContent(response.content || []);
+        }
       } catch (error) {
         console.error("Failed to fetch share content:", error);
       }
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [token, hash]);
+
+  useEffect(() => {
+    console.log(shareContent);
+  }, [shareContent]);
 
   return (
     <ShareContext.Provider value={{ shareContent, setHash }}>
@@ -181,7 +192,7 @@ const fetchCards = async (token: string) => {
 };
 
 const fetchShareCards = async (token: string, hash: string) => {
-  if (hash === "" || token === "") return {};
+  if (hash === "" || token === "") return { content: [] };
   const backend_url = import.meta.env.VITE_BACKEND_URL;
   const res = await axios.get(backend_url + "brain/" + hash, {
     headers: {

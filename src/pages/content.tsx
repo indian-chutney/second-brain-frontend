@@ -7,13 +7,16 @@ import {
   useAuthContext,
   useContentContext,
   useModalContext,
+  useShareContext,
 } from "../hooks/hooks";
 import { ObjectId } from "bson";
 import axios from "axios";
 
 export const Content = ({ variant }: { variant?: "shared" }) => {
-  const { id } = useParams();
+  const { id, contentId } = useParams();
   const { rootContent } = useContentContext();
+  const { shareContent } = useShareContext();
+
   const { setDeleteModal, setModal } = useModalContext();
   const { token } = useAuthContext();
   const navigate = useNavigate();
@@ -21,7 +24,14 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
   const key = import.meta.env.VITE_EMBED_KEY;
   const backend_url = import.meta.env.VITE_BACKEND_URL;
 
-  const card = rootContent.find((item) => item._id === id);
+  let card;
+  if (variant != "shared") {
+    card = rootContent.find((item) => item._id === id);
+  } else {
+    card = shareContent.find((item) => item._id === contentId);
+    console.log(shareContent);
+    console.log(card);
+  }
   const [imgsrc, setImg] = useState("");
   const timestamp = new ObjectId(card?._id).getTimestamp();
 
@@ -76,21 +86,23 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
         <div className="flex justify-between pl-[40px] tab:pl-[100px] tab:pr-[40px]">
           <p className="text-white text-[40px] tab:text-[48px] font-semibold -mt-1 tab:-mt-2 ">
             {card?.title}
-          </p>
-          <div className="flex gap-[10px]">
-            <Button
-              variant="secondary"
-              size="s-md"
-              text="Edit"
-              onClick={() => setModal(true)}
-            />
-            <Button
-              variant="secondary"
-              size="s-md"
-              text="Delete"
-              onClick={() => setDeleteModal(true)}
-            />
-          </div>
+          </p>{" "}
+          {variant != "shared" && (
+            <div className="flex gap-[10px]">
+              <Button
+                variant="secondary"
+                size="s-md"
+                text="Edit"
+                onClick={() => setModal(true)}
+              />
+              <Button
+                variant="secondary"
+                size="s-md"
+                text="Delete"
+                onClick={() => setDeleteModal(true)}
+              />
+            </div>
+          )}
         </div>
         <div className="flex flex-col mt-10 pl-[30px] tab:pl-[100px] text-white">
           <div className="flex mt-6 tab:mt-10 bg-bd-silver w-[370px] tab:w-[450px] h-[220px] tab:h-[280px] rounded-[10px] justify-center items-center">
@@ -144,8 +156,12 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
         </div>
       </div>
       <Modal variant="settings" />
-      <Modal variant="delete" onSubmit={deleteContent} />
-      <Modal variant="content" edit={true} contentId={id} />
+      {variant != "shared" && (
+        <Modal variant="delete" onSubmit={deleteContent} />
+      )}
+      {variant != "shared" && (
+        <Modal variant="content" edit={true} contentId={id} />
+      )}
     </>
   );
 };

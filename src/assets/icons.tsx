@@ -19,6 +19,7 @@ import {
   ArrowLeft,
   ViewGrid,
   ShareAndroidSolid,
+  HomeSimpleDoor,
 } from "iconoir-react";
 import { IconSizeVariants, type IconProps } from ".";
 
@@ -223,6 +224,16 @@ export const ShareIcon2 = (props: IconProps) => {
       height={IconSizeVariants[props.size]}
       width={IconSizeVariants[props.size]}
       color={"#ffffff"}
+    />
+  );
+};
+
+export const HomeIcon = (props: IconProps) => {
+  return (
+    <HomeSimpleDoor
+      height={IconSizeVariants[props.size]}
+      width={IconSizeVariants[props.size]}
+      color={secondcolor}
     />
   );
 };

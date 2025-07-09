@@ -1,5 +1,5 @@
 import { useMediaQuery } from "react-responsive";
-import { PlusIcon } from "../assets/icons";
+import { HomeIcon, PlusIcon } from "../assets/icons";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import {
@@ -7,24 +7,29 @@ import {
   useModalContext,
   useShareContext,
 } from "../hooks/hooks";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
 
 type DashboardType = "dashboard" | "share";
 
 export const DashboardContent = (props: { variant: DashboardType }) => {
   const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
   const { setModal } = useModalContext();
+  const navigate = useNavigate();
 
   const { rootContent } = useContentContext();
 
   const { shareContent, setHash } = useShareContext();
 
   const { id } = useParams();
-  if (props.variant === "share") {
-    if (id != undefined) setHash(id);
-  }
+  useEffect(() => {
+    if (props.variant === "share" && id !== undefined) {
+      setHash(id);
+    }
+  }, [id, props.variant, setHash]);
 
   const contentToRender = props.variant == "share" ? shareContent : rootContent;
+  console.log(contentToRender);
   return (
     <div className="flex flex-col tab:ml-[377px] pt-[120px] tab:pt-[47px] flex-1 mb-[30px]">
       {props.variant == "dashboard" && (
@@ -40,8 +45,18 @@ export const DashboardContent = (props: { variant: DashboardType }) => {
         </div>
       )}
       {props.variant == "share" && (
-        <div className="flex justify-between items-center w-full px-[30px] tab:px-[70px]">
-          <p className="text-white font-semibold text-[25px]">{`@${contentToRender[0].userid.username}'s Notes`}</p>
+        <div className="flex justify-start items-center w-full px-[30px] tab:px-[70px] gap-[20px]">
+          <Button
+            variant="secondary"
+            size="s-ico"
+            startIcon={<HomeIcon size="md" />}
+            onClick={() => navigate("/")}
+          />
+          <p className="text-white font-semibold text-[25px]">
+            {contentToRender[0]
+              ? `@${contentToRender[0].userid.username}'s Notes`
+              : "Loading... (user nor found)"}
+          </p>
         </div>
       )}
       <div className="flex flex-wrap items-start justify-start gap-[50px] pl-[70px] pt-[54px]">

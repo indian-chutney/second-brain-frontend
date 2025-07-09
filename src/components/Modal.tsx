@@ -310,7 +310,7 @@ const SettingModal = () => {
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          `http://localhot:5173/share/${userData.hash}`,
+                          `http://localhost:5173/share/${userData.hash}`,
                         );
                       }}
                       className="bg-black text-white px-3 py-1 rounded-md text-xs hover:bg-gray-800 transition"
@@ -332,7 +332,10 @@ const SettingModal = () => {
                 <div className="flex items-center justify-center w-full">
                   <p
                     className="flex text-red-600 hover:bg-bd-silver w-full max-w-[280px] h-[40px] text-center items-center justify-center rounded-xl transition-colors duration-300 cursor-pointer"
-                    onClick={logout}
+                    onClick={() => {
+                      setSetting(false);
+                      logout();
+                    }}
                   >
                     Log Out
                   </p>
