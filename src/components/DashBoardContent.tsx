@@ -7,6 +7,7 @@ import {
   useModalContext,
   useShareContext,
 } from "../hooks/hooks";
+import { useParams } from "react-router-dom";
 
 type DashboardType = "dashboard" | "share";
 
@@ -16,7 +17,12 @@ export const DashboardContent = (props: { variant: DashboardType }) => {
 
   const { rootContent } = useContentContext();
 
-  const { shareContent } = useShareContext();
+  const { shareContent, setHash } = useShareContext();
+
+  const { id } = useParams();
+  if (props.variant === "share") {
+    if (id != undefined) setHash(id);
+  }
 
   const contentToRender = props.variant == "share" ? shareContent : rootContent;
   return (

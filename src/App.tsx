@@ -60,15 +60,13 @@ const AnimatedRoutes = () => {
               <Route
                 path="/"
                 element={
-                  <ModalContextProvider>
-                    <QueryClientProvider client={queryClient}>
-                      <ContentContextProvider>
-                        <ShareContextProvider>
-                          <HomeLayout />
-                        </ShareContextProvider>
-                      </ContentContextProvider>
-                    </QueryClientProvider>
-                  </ModalContextProvider>
+                  <QueryClientProvider client={queryClient}>
+                    <ContentContextProvider>
+                      <ShareContextProvider>
+                        <HomeLayout />
+                      </ShareContextProvider>
+                    </ContentContextProvider>
+                  </QueryClientProvider>
                 }
               >
                 <Route index element={<DashBoard varaint="dashboard" />} />
