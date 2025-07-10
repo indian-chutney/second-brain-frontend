@@ -152,10 +152,18 @@ const DeleteModal = ({ onSubmit }: { onSubmit: () => void }) => {
   );
 };
 
+type user = {
+  username: string;
+  email: string;
+  links: string;
+  isShared?: boolean;
+  hash?: string;
+};
+
 const SettingModal = () => {
   const { setSetting } = useModalContext();
   const [animationState, setAnimationState] = useState("entering");
-  const [userData, setUserData] = useState<any>({});
+  const [userData, setUserData] = useState<user | null>(null);
   const backend_url = import.meta.env.VITE_BACKEND_URL;
   const { token, logout } = useAuthContext();
   const [passwordDisplay, setPasswordDisplay] = useState(false);
@@ -221,10 +229,14 @@ const SettingModal = () => {
     }, 300);
   };
 
+  if (userData === null) {
+    return <div>User not found</div>;
+  }
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        className="bg-back-dark w-[95vw] max-w-[400px] md:max-w-[700px] mx-4 flex flex-col justify-center items-center text-white p-4 md:p-6 gap-4 rounded-xl shadow-xl"
+        className={`bg-back-dark w-[95vw] max-w-[400px] md:max-w-[700px] mx-4 flex flex-col justify-center items-center text-white p-4 md:p-6 gap-4 rounded-xl shadow-xl ${animationState === "entering" ? "animate-modal-entry" : "animate-modal-exit"}`}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -291,11 +303,15 @@ const SettingModal = () => {
                           return;
                         }
                         const res = await shareBackendCall();
-                        setUserData((prev: any) => ({
-                          ...prev,
-                          isShared: true,
-                          hash: userData.hash,
-                        }));
+                        setUserData((prev) => {
+                          if (!prev) return prev;
+
+                          return {
+                            ...prev,
+                            isShared: true,
+                            hash: userData.hash,
+                          };
+                        });
                         console.log(res);
                       }}
                     />

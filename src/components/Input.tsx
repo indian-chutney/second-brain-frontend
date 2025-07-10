@@ -192,7 +192,9 @@ const TagsInput = ({
   );
 };
 
-const variantComponents: Record<Variants, React.ComponentType<any>> = {
+type allProps = InputProps | TagsInputProps | StyleProps;
+
+const variantComponents: Record<Variants, React.ComponentType<allProps>> = {
   input: InputStyle,
   options: OptionInput,
   tags: TagsInput,

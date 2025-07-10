@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { MenuIcon, Logo, ExitIcon } from "../assets/icons";
 import { SidebarComponent } from "./SidebarComponent";
 import { Button } from "./Button";
 import { useNavigate } from "react-router-dom";
+import { ContentContext, ShareContext } from "../contexts/contexts";
 
 type navbarVariants = "mobile-dashboard" | "landing";
 
@@ -84,6 +85,11 @@ const DropDown = () => {
 
   const contentVariant: variants[] = ["tweets", "article", "notion", "video"];
 
+  const ShareCtx = useContext(ShareContext);
+  const ContentCtx = useContext(ContentContext);
+
+  const setType = ShareCtx ? ShareCtx.setType : ContentCtx!.setType;
+
   return (
     <div className="h-full w-full pt-[100px] overflow-y-auto">
       {/* Dropdown Content */}
@@ -102,14 +108,14 @@ const DropDown = () => {
                 animation: "slideInLeft 0.3s ease-out forwards",
               }}
             >
-              <SidebarComponent variant={content} />
+              <SidebarComponent variant={content} setType={setType} />
             </div>
           ))}
         </nav>
         {/* Optional: Additional Menu Items */}
         <div className="mt-[60px] pt-[30px] border-t border-bd-silver">
           <div className="flex flex-col gap-[20px]">
-            <SidebarComponent variant="settings" />
+            <SidebarComponent variant="settings" setType={setType} />
           </div>
         </div>
       </div>

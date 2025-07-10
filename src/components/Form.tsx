@@ -28,12 +28,7 @@ interface formDataProps {
 
 type content = "tweets" | "notion" | "article" | "video" | "other" | "empty";
 
-interface contentDataProps {
-  title: string;
-  type: content;
-  link: string;
-  tags: string[];
-}
+type contentDataProps = z.infer<typeof contentSchema>;
 
 interface passwordDataProps {
   password: string;
@@ -91,7 +86,7 @@ export const Form = (props: FormProps) => {
     } else if (props.variant == "modal") {
       const contentData: contentDataProps = {
         title: formData.get("title") as string,
-        type: formData.get("type") as content,
+        type: formData.get("type") as contentDataProps["type"],
         link: formData.get("link") as string,
         tags: (formData.get("tags") as string)
           .split(",")
@@ -99,7 +94,7 @@ export const Form = (props: FormProps) => {
       };
       let data, errors;
       if (props.edit) {
-        ({ data, errors } = validateEditForm(contentSchema, contentData));
+        ({ data, errors } = validateEditForm(contentData));
       } else {
         ({ data, errors } = validateForm(contentSchema, contentData));
       }
@@ -457,27 +452,32 @@ const validateForm = <T extends z.ZodTypeAny>(
   return { errors };
 };
 
-const validateEditForm = <T extends z.ZodRawShape>(
-  schema: z.ZodObject<T>,
-  formData: Partial<z.infer<typeof schema>>,
-): { data?: z.infer<typeof schema>; errors?: FormErrors } => {
+const validateEditForm = (
+  formData: Partial<contentDataProps>,
+): { data?: Partial<contentDataProps>; errors?: FormErrors } => {
   const errors: FormErrors = {};
 
-  const filteredData = Object.entries(formData).reduce(
-    (acc, [key, value]) => {
-      if (
-        value !== "" &&
-        value !== null &&
-        value !== undefined &&
-        !(Array.isArray(value) && value.length === 0)
+  const filteredData = Object.entries(formData).reduce((acc, [key, value]) => {
+    if (
+      value !== "" &&
+      value !== null &&
+      value !== undefined &&
+      !(Array.isArray(value) && value.length === 0)
+    ) {
+      if (key === "tags" && Array.isArray(value)) {
+        acc.tags = value;
+      } else if (key === "type" && typeof value === "string") {
+        acc.type = value as contentDataProps["type"];
+      } else if (
+        (key === "title" || key === "link") &&
+        typeof value === "string"
       ) {
-        acc[key as keyof typeof schema.shape] = value;
+        acc[key] = value;
       }
+    }
 
-      return acc;
-    },
-    {} as Partial<z.infer<typeof schema>>,
-  );
+    return acc;
+  }, {} as Partial<contentDataProps>);
 
   if (Object.keys(filteredData).length === 0) {
     return {
@@ -487,7 +487,7 @@ const validateEditForm = <T extends z.ZodRawShape>(
     };
   }
 
-  const partialSchema = schema.partial();
+  const partialSchema = contentSchema.partial();
 
   const result = partialSchema.safeParse(filteredData);
 
