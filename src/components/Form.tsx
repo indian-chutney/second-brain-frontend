@@ -37,6 +37,7 @@ interface passwordDataProps {
 }
 
 const backend_url = import.meta.env.VITE_BACKEND_URL;
+console.log(import.meta.env.VITE_BACKEND_URL);
 
 export const Form = (props: FormProps) => {
   const [errors, setErrors] = useState<FormErrors>({});
@@ -73,6 +74,8 @@ export const Form = (props: FormProps) => {
         } as authDataProps;
         const { backendError, response, backendToken } =
           await signBackendPost(datawithVariant);
+        console.log(backendError);
+        console.log(response);
         if (backendError) {
           setErrors({ backend: response });
         } else {
@@ -580,7 +583,7 @@ const signBackendPost = async (
       };
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        const data = err.response?.data;
+        const data = err.response?.data.message;
         return { backendError: true, response: data || err.message };
       }
       return { backendError: true, response: "Unknown error" };
@@ -599,7 +602,7 @@ const signBackendPost = async (
       };
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        const data = err.response?.data;
+        const data = err.response?.data.message;
         return { backendError: true, response: data || err.message };
       }
       return { backendError: true, response: "Unknown error" };
@@ -634,7 +637,7 @@ const changePasswordRequest = async (props: {
   } catch (err) {
     if (axios.isAxiosError(err)) {
       const data = err.response?.data;
-      return { response: data || err.message, error: true };
+      return { response: data.message || err.message, error: true };
     }
     return { response: "Unknown error", error: true };
   }
