@@ -321,12 +321,12 @@ const SettingModal = () => {
                 {userData.isShared && (
                   <div className="w-full max-w-[280px] sm:max-w-[600px] mt-4 p-4 bg-white text-black rounded-xl shadow flex items-center justify-between gap-2">
                     <div className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">
-                      {window.location.href + userData.hash}
+                      {window.location.href + "/share/" + userData.hash}
                     </div>
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          `http://localhost:5173/share/${userData.hash}`,
+                          window.location.href + "/share/" + userData.hash,
                         );
                       }}
                       className="bg-black text-white px-3 py-1 rounded-md text-xs hover:bg-gray-800 transition"
