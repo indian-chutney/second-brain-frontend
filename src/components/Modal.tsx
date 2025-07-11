@@ -12,7 +12,6 @@ import { useAuthContext, useModalContext } from "../hooks/hooks";
 import { Button } from "./Button";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
-import { useLocation } from "react-router-dom";
 
 type variant = "content" | "settings" | "delete";
 
