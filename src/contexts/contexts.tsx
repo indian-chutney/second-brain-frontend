@@ -117,6 +117,7 @@ export const ContentContextProvider = ({ children }: ProviderProps) => {
       return fetchCards(authContext.token);
     },
     enabled: !!authContext.token,
+    refetchInterval: 1000,
   });
 
   useEffect(() => {
