@@ -12,6 +12,7 @@ import { useAuthContext, useModalContext } from "../hooks/hooks";
 import { Button } from "./Button";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
 type variant = "content" | "settings" | "delete";
 
@@ -321,7 +322,7 @@ const SettingModal = () => {
                 {userData.isShared && (
                   <div className="w-full max-w-[280px] sm:max-w-[600px] mt-4 p-4 bg-white text-black rounded-xl shadow flex items-center justify-between gap-2">
                     <div className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">
-                      {`http://localhot:5173/share/${userData.hash}`}
+                      {window.location.href + userData.hash}
                     </div>
                     <button
                       onClick={() => {
