@@ -5,6 +5,8 @@ import { NavBar } from "../components/Navbar";
 
 export const Landing = () => {
   const navigate = useNavigate();
+
+  document.title = "Second Brain - Your Personal Knowledge Hub";
   return (
     <div>
       <NavBar variant="landing" />

@@ -9,6 +9,11 @@ export const SignPage = (props: { variant: "signup" | "signin" }) => {
   const isMobile = useMediaQuery({ query: "(max-width: 460px)" });
   const navigate = useNavigate();
 
+  document.title =
+    props.variant === "signup"
+      ? "Create your Second brain account"
+      : "SignIn to your second brain account";
+
   return (
     <>
       {isMobile ? (
