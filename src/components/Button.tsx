@@ -8,6 +8,7 @@ interface ButtonProps {
   size: Size;
   text?: string;
   border?: boolean;
+  pointeroff?: boolean;
   startIcon?: ReactElement;
   endIcon?: ReactElement;
   onClick?: () => void;
@@ -20,8 +21,7 @@ const variantStyle = {
     "bg-btn-dark rounded-[29px] hover:bg-[#2a2a2b] text-white  gap-[10px]",
 };
 
-const defaultStyles =
-  "font-inter inline-flex items-center justify-center cursor-pointer";
+const defaultStyles = "font-inter inline-flex items-center justify-center";
 
 const sizeStyles = {
   "p-sm": "h-[43px] px-[17px] py-[8px] text-[18px]",
@@ -38,7 +38,7 @@ const borderStyle = "border-2 border-solid";
 export const Button = (props: ButtonProps) => {
   return (
     <button
-      className={`${variantStyle[props.variant]} ${defaultStyles} ${sizeStyles[props.size]} ${props.border ? borderStyle : ""} ${props.size === "s-xs" ? "border-brand-primary" : "border-bd-silver"}`}
+      className={`${variantStyle[props.variant]} ${defaultStyles} ${sizeStyles[props.size]} ${props.border ? borderStyle : ""} ${props.size === "s-xs" ? "border-brand-primary" : "border-bd-silver"} ${props.pointeroff ? "" : "cursor-pointer"}`}
       onClick={props.onClick}
     >
       {props.startIcon} {props.text} {props.endIcon}

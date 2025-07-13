@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { Logo } from "../assets/icons";
 import { SidebarComponent } from "./SidebarComponent";
 import { ContentContext, ShareContext } from "../contexts/contexts";
+import { useNavigate } from "react-router-dom";
 
 export const SideBar = () => {
   type variants = "all" | "tweets" | "notion" | "article" | "video" | "other";
@@ -40,8 +41,12 @@ export const SideBar = () => {
 };
 
 const Header = () => {
+  const navigate = useNavigate();
   return (
-    <div className="flex items-center gap-[7px]">
+    <div
+      className="flex items-center gap-[7px] cursor-pointer"
+      onClick={() => navigate("/")}
+    >
       <Logo size="logo" />
       <p className="text-white text-[29px] font-semibold tracking-tight">
         Second Brain

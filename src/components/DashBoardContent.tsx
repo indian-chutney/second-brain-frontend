@@ -10,6 +10,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import type { ContentItem } from "../contexts/contexts";
+import { Loader } from "../assets/loader";
 
 type DashboardType = "dashboard" | "share";
 
@@ -20,29 +21,50 @@ export const DashboardContent = (props: { variant: DashboardType }) => {
 };
 
 const ShareLogic = () => {
-  const { shareContent, setHash } = useShareContext();
+  const { shareContent, setHash, isLoading } = useShareContext();
   const { id } = useParams();
   useEffect(() => {
     if (id !== undefined) {
       setHash(id);
     }
   }, [id, setHash]);
-  return <DashBoardUI variant="share" content={shareContent} />;
+  return (
+    <DashBoardUI variant="share" content={shareContent} isLoading={isLoading} />
+  );
 };
 
 const DashBoardLogic = () => {
-  const { rootContent } = useContentContext();
-  return <DashBoardUI variant="dashboard" content={rootContent} />;
+  const { rootContent, isLoading } = useContentContext();
+  return (
+    <DashBoardUI
+      variant="dashboard"
+      content={rootContent}
+      isLoading={isLoading}
+    />
+  );
 };
 
 const DashBoardUI = (props: {
   variant: DashboardType;
   content: ContentItem[];
+  isLoading: boolean;
 }) => {
   const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
   const { setModal } = useModalContext();
   const navigate = useNavigate();
 
+  if (
+    props.isLoading ||
+    (props.variant === "share" && props.content.length === 0)
+  ) {
+    return (
+      <div className="flex flex-col tab:ml-[377px] pt-[120px] tab:pt-[47px] flex-1 mb-[30px]">
+        <div className="flex justify-center items-center h-64">
+          <Loader />
+        </div>
+      </div>
+    );
+  }
   const contentToRender = props.content;
   return (
     <div className="flex flex-col tab:ml-[377px] pt-[120px] tab:pt-[47px] flex-1 mb-[30px]">
@@ -69,14 +91,14 @@ const DashBoardUI = (props: {
           <p className="text-white font-semibold text-[25px]">
             {contentToRender[0]
               ? `@${contentToRender[0].userid.username}'s Notes`
-              : "Loading... (user nor found)"}
+              : "Loading..."}
           </p>
         </div>
       )}
       <div className="flex flex-wrap items-start justify-start gap-[50px] pl-[70px] pt-[54px]">
         {contentToRender?.length === 0 &&
           (props.variant === "share" ? (
-            <p className="text-white text-lg">No Content Uploaded</p>
+            <p className="text-white text-lg">Wait..</p>
           ) : (
             <Card variant="empty" />
           ))}

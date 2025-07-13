@@ -191,6 +191,7 @@ const Tags = ({ tags }: { tags: Tag[] }) => {
           variant="secondary"
           size="s-xs"
           border={true}
+          pointeroff={true}
           text={"#" + tag.title}
         />
       ))}

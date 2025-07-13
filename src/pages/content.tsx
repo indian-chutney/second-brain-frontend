@@ -7,6 +7,7 @@ import { useAuthContext, useModalContext } from "../hooks/hooks";
 import { ObjectId } from "bson";
 import axios from "axios";
 import { ContentContext, ShareContext } from "../contexts/contexts";
+import { Loader } from "../assets/loader";
 
 export const Content = ({ variant }: { variant?: "shared" }) => {
   const { id, contentId } = useParams();
@@ -32,9 +33,11 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
 
   const [imgsrc, setImg] = useState("");
   const timestamp = new ObjectId(card?._id).getTimestamp();
+  const [imageLoading, setImageLoading] = useState(false);
 
   useEffect(() => {
     if (!card) return;
+    setImageLoading(true);
     fetch("https://api.linkpreview.net", {
       method: "POST",
       headers: {
@@ -54,9 +57,11 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
       .then((data) => {
         console.log(data);
         setImg(data.image);
+        setImageLoading(false);
       })
       .catch((err) => {
         console.error("Fetch error:", err);
+        setImageLoading(false);
       });
   }, [card]);
 
@@ -104,14 +109,20 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
         </div>
         <div className="flex flex-col mt-10 pl-[30px] tab:pl-[100px] text-white">
           <div className="flex mt-6 tab:mt-10 bg-bd-silver w-[370px] tab:w-[450px] h-[220px] tab:h-[280px] rounded-[10px] justify-center items-center">
-            <img
-              className="w-[315px] tab:w-[380px] h-[160px] tab:h-[200px] object-cover rounded-[10px] cursor-pointer"
-              src={imgsrc}
-              alt="broken"
-              onClick={() =>
-                window.open(card?.link, "_blank", "noopener,noreferrer")
-              }
-            />
+            {imageLoading ? (
+              <div className="flex justify-center items-center h-48">
+                <Loader />
+              </div>
+            ) : (
+              <img
+                className="w-[315px] tab:w-[380px] h-[160px] tab:h-[200px] object-cover rounded-[10px] cursor-pointer"
+                src={imgsrc}
+                alt="broken"
+                onClick={() =>
+                  window.open(card?.link, "_blank", "noopener,noreferrer")
+                }
+              />
+            )}
           </div>
           <div className="flex justify-start mt-[50px] gap-[10px] items-center">
             <p className="text-white font-semibold text-[20px] tab:text-[25px]">
@@ -122,6 +133,7 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
                 <Button
                   variant="secondary"
                   size="s-xs"
+                  pointeroff={true}
                   text={"# " + c?.title}
                 />
               ))}

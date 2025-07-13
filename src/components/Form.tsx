@@ -460,27 +460,39 @@ const validateEditForm = (
 ): { data?: Partial<contentDataProps>; errors?: FormErrors } => {
   const errors: FormErrors = {};
 
-  const filteredData = Object.entries(formData).reduce((acc, [key, value]) => {
-    if (
-      value !== "" &&
-      value !== null &&
-      value !== undefined &&
-      !(Array.isArray(value) && value.length === 0)
-    ) {
-      if (key === "tags" && Array.isArray(value)) {
-        acc.tags = value;
-      } else if (key === "type" && typeof value === "string") {
-        acc.type = value as contentDataProps["type"];
-      } else if (
-        (key === "title" || key === "link") &&
-        typeof value === "string"
-      ) {
-        acc[key] = value;
-      }
-    }
+  const cleanedFormData = {
+    ...formData,
+    tags: Array.isArray(formData.tags)
+      ? formData.tags.filter((tag) => tag.trim() !== "")
+      : formData.tags,
+  };
 
-    return acc;
-  }, {} as Partial<contentDataProps>);
+  const filteredData = Object.entries(cleanedFormData).reduce(
+    (acc, [key, value]) => {
+      if (
+        value !== "" &&
+        value !== null &&
+        value !== undefined &&
+        (!Array.isArray(value) || value.length > 0)
+      ) {
+        if (key === "tags" && Array.isArray(value)) {
+          acc.tags = value as contentDataProps["tags"];
+        } else if (key === "type" && typeof value === "string") {
+          acc.type = value as contentDataProps["type"];
+        } else if (
+          (key === "title" || key === "link") &&
+          typeof value === "string"
+        ) {
+          acc[key] = value as contentDataProps["title" | "link"];
+        }
+      }
+
+      return acc;
+    },
+    {} as Partial<contentDataProps>,
+  );
+
+  console.log(filteredData);
 
   if (Object.keys(filteredData).length === 0) {
     return {

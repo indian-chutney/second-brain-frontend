@@ -57,8 +57,10 @@ export const AuthContextProvider = ({ children }: ProviderProps) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
+    setInterval(() => {
+      localStorage.removeItem("token");
+      setToken(null);
+    }, 1000);
   };
 
   const isAuthenticated = !!token;
@@ -99,6 +101,7 @@ type ContentProps = {
   type: Content;
   setType: React.Dispatch<React.SetStateAction<Content>>;
   rootContent: ContentItem[];
+  isLoading: boolean;
 };
 
 export const ContentContext = createContext<ContentProps | undefined>(
@@ -110,7 +113,7 @@ export const ContentContextProvider = ({ children }: ProviderProps) => {
   const [rootContent, setRootContent] = useState<ContentItem[]>([]);
   const authContext = useAuthContext();
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["cards"],
     queryFn: () => {
       if (!authContext.token) throw new Error("No token");
@@ -131,7 +134,7 @@ export const ContentContextProvider = ({ children }: ProviderProps) => {
   }, [data, type]);
 
   return (
-    <ContentContext.Provider value={{ type, setType, rootContent }}>
+    <ContentContext.Provider value={{ type, setType, rootContent, isLoading }}>
       {children}
     </ContentContext.Provider>
   );
@@ -141,6 +144,7 @@ type ShareContextProps = {
   shareContent: ContentItem[];
   setHash: React.Dispatch<React.SetStateAction<string>>;
   setType: React.Dispatch<React.SetStateAction<Content>>;
+  isLoading: boolean;
 };
 
 export const ShareContext = createContext<ShareContextProps | null>(null);
@@ -151,7 +155,7 @@ export const ShareContextProvider = ({ children }: ProviderProps) => {
   const [type, setType] = useState<Content>("all");
   const { token } = useAuthContext();
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["cards"],
     queryFn: () => {
       if (!token) throw new Error("No token");
@@ -171,7 +175,9 @@ export const ShareContextProvider = ({ children }: ProviderProps) => {
   }, [data, type]);
 
   return (
-    <ShareContext.Provider value={{ shareContent, setHash, setType }}>
+    <ShareContext.Provider
+      value={{ shareContent, setHash, setType, isLoading }}
+    >
       {children}
     </ShareContext.Provider>
   );

@@ -25,6 +25,7 @@ import { IconSizeVariants, type IconProps } from ".";
 
 const brandcolor = "#8b5cf6";
 const secondcolor = "#808a92";
+const profile = "#212224";
 
 export const LinkIcon = (props: IconProps) => {
   return (
@@ -183,7 +184,7 @@ export const ProfileIcon = (props: IconProps) => {
     <ProfileCircle
       height={IconSizeVariants[props.size]}
       width={IconSizeVariants[props.size]}
-      color={secondcolor}
+      color={profile}
     />
   );
 };
