@@ -8,8 +8,12 @@ import {
   useShareContext,
 } from "../hooks/hooks";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
-import type { ContentItem } from "../contexts/contexts";
+import { useContext, useEffect, useState } from "react";
+import {
+  ContentContext,
+  ShareContext,
+  type ContentItem,
+} from "../contexts/contexts";
 import { Loader } from "../assets/loader";
 
 type DashboardType = "dashboard" | "share";
@@ -53,9 +57,32 @@ const DashBoardUI = (props: {
   const { setModal } = useModalContext();
   const navigate = useNavigate();
 
+  const shareCtx = useContext(ShareContext);
+  const contentCtx = useContext(ContentContext);
+
+  const type = shareCtx ? shareCtx.type : contentCtx?.type;
+
+  const [isTypeChanging, setIsTypeChanging] = useState(false);
+  const [previousType, setPreviousType] = useState(type);
+
+  useEffect(() => {
+    if (
+      type !== previousType &&
+      previousType !== null &&
+      previousType !== undefined
+    ) {
+      setIsTypeChanging(true);
+      const timer = setTimeout(() => {
+        setIsTypeChanging(false);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+    setPreviousType(type);
+  }, [type]);
   if (
     props.isLoading ||
-    (props.variant === "share" && props.content.length === 0)
+    isTypeChanging ||
+    (props.variant === "share" && props.content.length === 0 && props.isLoading)
   ) {
     return (
       <div className="flex flex-col tab:ml-[377px] pt-[120px] tab:pt-[47px] flex-1 mb-[30px]">

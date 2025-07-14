@@ -35,6 +35,7 @@ type variants =
 export const SidebarComponent = (props: {
   variant: variants;
   setType: React.Dispatch<React.SetStateAction<Content>>;
+  isActive?: boolean;
 }) => {
   const { setSetting } = useModalContext();
   return (
@@ -47,7 +48,13 @@ export const SidebarComponent = (props: {
       }
     >
       {iconsMap[props.variant]}
-      <p className="text-[20px] text-white hover:text-brand-primary">
+      <p
+        className={`text-[20px] transition-colors duration-200 ${
+          props.isActive
+            ? "text-brand-primary font-semibold"
+            : "text-white hover:text-brand-primary"
+        }`}
+      >
         {props.variant.charAt(0).toUpperCase() + props.variant.slice(1)}
       </p>
     </div>

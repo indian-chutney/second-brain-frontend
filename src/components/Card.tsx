@@ -16,7 +16,7 @@ import {
 } from "../assets/icons";
 import { useModalContext } from "../hooks/hooks";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ShareContext } from "../contexts/contexts";
+import { ContentContext, ShareContext } from "../contexts/contexts";
 
 type ContentTypes =
   | "tweets"
@@ -83,6 +83,10 @@ export const Card = (props: CardProps) => {
 
 const EmptyContainer = () => {
   const { setModal } = useModalContext();
+  const shareCtx = useContext(ShareContext);
+  const contentCtx = useContext(ContentContext);
+
+  const type = shareCtx ? shareCtx.type : contentCtx!.type;
   return (
     <>
       <div className="bg-btn-dark text-white px-[22px] py-[26px] flex-1">
@@ -90,7 +94,7 @@ const EmptyContainer = () => {
           variant="secondary"
           size="s-sm"
           border={true}
-          text="Create new content"
+          text={"Create New " + type + " link"}
           endIcon={<PlusIcon size="sm" />}
           onClick={() => {
             setModal((c) => !c);

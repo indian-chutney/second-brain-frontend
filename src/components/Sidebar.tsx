@@ -19,6 +19,7 @@ export const SideBar = () => {
   const ShareCtx = useContext(ShareContext);
   const ContentCtx = useContext(ContentContext);
 
+  const type = ShareCtx ? ShareCtx.type : ContentCtx!.type;
   const setType = ShareCtx ? ShareCtx.setType : ContentCtx!.setType;
 
   return (
@@ -26,7 +27,12 @@ export const SideBar = () => {
       <Header />
       <nav className="pt-[56px] flex flex-col gap-[40px] flex-1">
         {contentVariant.map((content) => (
-          <SidebarComponent variant={content} key={content} setType={setType} />
+          <SidebarComponent
+            variant={content}
+            key={content}
+            setType={setType}
+            isActive={content == type}
+          />
         ))}
       </nav>
       <div className="pb-[52px]">

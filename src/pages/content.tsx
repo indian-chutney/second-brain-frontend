@@ -15,8 +15,6 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
   const ContentCtx = useContext(ContentContext);
   const ShareCtx = useContext(ShareContext);
 
-  document.title = variant == "shared" ? "Shared Content" : "Content";
-
   const { setDeleteModal, setModal } = useModalContext();
   const { token } = useAuthContext();
   const navigate = useNavigate();
@@ -76,6 +74,8 @@ export const Content = ({ variant }: { variant?: "shared" }) => {
     setDeleteModal(false);
     navigate("/");
   };
+
+  document.title = card?.title as string;
 
   return (
     <>

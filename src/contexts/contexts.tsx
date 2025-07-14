@@ -143,6 +143,7 @@ export const ContentContextProvider = ({ children }: ProviderProps) => {
 type ShareContextProps = {
   shareContent: ContentItem[];
   setHash: React.Dispatch<React.SetStateAction<string>>;
+  type: Content;
   setType: React.Dispatch<React.SetStateAction<Content>>;
   isLoading: boolean;
 };
@@ -176,7 +177,7 @@ export const ShareContextProvider = ({ children }: ProviderProps) => {
 
   return (
     <ShareContext.Provider
-      value={{ shareContent, setHash, setType, isLoading }}
+      value={{ shareContent, setHash, type, setType, isLoading }}
     >
       {children}
     </ShareContext.Provider>
