@@ -118,14 +118,14 @@ const DashBoardUI = (props: {
           <p className="text-white font-semibold text-[25px]">
             {contentToRender[0]
               ? `@${contentToRender[0].userid.username}'s Notes`
-              : "Loading..."}
+              : "Not found"}
           </p>
         </div>
       )}
       <div className="flex flex-wrap items-start justify-start gap-[50px] pl-[70px] pt-[54px]">
         {contentToRender?.length === 0 &&
           (props.variant === "share" ? (
-            <p className="text-white text-lg">Wait..</p>
+            <p className="text-white text-lg">Not found</p>
           ) : (
             <Card variant="empty" />
           ))}
