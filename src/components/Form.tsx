@@ -46,6 +46,7 @@ export const Form = (props: FormProps) => {
   const navigate = useNavigate();
   const { token, login } = useAuthContext();
   const { setModal, setSetting } = useModalContext();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -72,10 +73,10 @@ export const Form = (props: FormProps) => {
           ...data,
           variant: props.variant,
         } as authDataProps;
+        setLoading(true);
         const { backendError, response, backendToken } =
           await signBackendPost(datawithVariant);
-        console.log(backendError);
-        console.log(response);
+        setLoading(false);
         if (backendError) {
           setErrors({ backend: response });
         } else {
@@ -101,9 +102,6 @@ export const Form = (props: FormProps) => {
       } else {
         ({ data, errors } = validateForm(contentSchema, contentData));
       }
-      console.log("Form submission data:", contentData);
-      console.log("Validation result:", { data, errors });
-      console.log(props.contentId);
       if (errors) {
         setErrors(errors);
       } else {
@@ -114,11 +112,12 @@ export const Form = (props: FormProps) => {
           ...(props.edit && { edit: props.edit }),
           ...(props.edit && { contentId: props.contentId }),
         } as authDataProps;
+        setLoading(true);
         const { backendError, response } =
           await signBackendPost(datawithVariant);
+        setLoading(false);
         if (backendError) {
           setErrors({ backend: response });
-          console.log(errors);
         } else {
           setErrors({});
           setSuccess(true);
@@ -140,7 +139,9 @@ export const Form = (props: FormProps) => {
           new_pwd: data?.confirmPassword as string,
           token: token as string,
         };
+        setLoading(true);
         const { response, error } = await changePasswordRequest(backendData);
+        setLoading(false);
         if (error) {
           setErrors({ backend: response });
         } else {
@@ -159,6 +160,7 @@ export const Form = (props: FormProps) => {
           onSuccess={() => {
             setModal(false);
           }}
+          loading={loading}
         />
       )}
       {(props.variant === "signin" || props.variant === "signup") && (
@@ -177,6 +179,7 @@ export const Form = (props: FormProps) => {
                   }
                 }
           }
+          loading={loading}
         />
       )}
 
@@ -187,6 +190,7 @@ export const Form = (props: FormProps) => {
           onSuccess={() => {
             setSetting(false);
           }}
+          loading={loading}
         />
       )}
     </form>
@@ -197,10 +201,12 @@ const ModalForm = ({
   errors,
   isSuccess,
   onSuccess,
+  loading,
 }: {
   errors: FormErrors;
   isSuccess: boolean;
   onSuccess: () => void;
+  loading: boolean;
 }) => {
   useEffect(() => {
     if (isSuccess && onSuccess) {
@@ -212,7 +218,9 @@ const ModalForm = ({
     }
   }, [isSuccess, onSuccess]);
   return (
-    <div className="flex flex-col gap-6">
+    <div
+      className={`flex flex-col gap-6 ${isSuccess ? "opacity-50 pointer-events-none" : ""}`}
+    >
       {errors.backend && <ErrorBanner message={errors.backend} />}
       {isSuccess && <SuccessBanner message={"Added Content Successfully"} />}
       <InputWrapper error={errors.title}>
@@ -231,7 +239,7 @@ const ModalForm = ({
         <InputBox variant="tags" name="tags" error={!!errors.tags} />
       </InputWrapper>
 
-      <Button variant="primary" size="p-sm" text="Submit" />
+      <Button variant="primary" size="p-sm" text="Submit" loading={loading} />
     </div>
   );
 };
@@ -272,17 +280,19 @@ const SignForm = ({
   variant,
   isSuccess,
   onSuccess,
+  loading,
 }: {
   errors: FormErrors;
   variant: "signin" | "signup";
   isSuccess?: boolean;
   onSuccess?: () => void;
+  loading: boolean;
 }) => {
   useEffect(() => {
     if (isSuccess && onSuccess) {
       const timer = setTimeout(() => {
         onSuccess();
-      }, 3000);
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
@@ -336,6 +346,7 @@ const SignForm = ({
         variant="primary"
         size="p-sm"
         text={variant === "signin" ? "Sign In" : "Sign Up"}
+        loading={loading}
       />
     </div>
   );
@@ -345,10 +356,12 @@ const ChangePasswordForm = ({
   errors,
   isSuccess,
   onSuccess,
+  loading,
 }: {
   errors: FormErrors;
   isSuccess: boolean;
   onSuccess: () => void;
+  loading: boolean;
 }) => {
   useEffect(() => {
     if (isSuccess && onSuccess) {
@@ -361,7 +374,9 @@ const ChangePasswordForm = ({
   }, [isSuccess, onSuccess]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div
+      className={`flex flex-col gap-6 ${isSuccess ? "opacity-50 pointer-events-none" : ""}`}
+    >
       {errors.backend && <ErrorBanner message={errors.backend} />}
       {isSuccess && <SuccessBanner message={"Changed Password successfully"} />}
       <InputWrapper error={errors.password}>
@@ -391,7 +406,7 @@ const ChangePasswordForm = ({
         />
       </InputWrapper>
 
-      <Button variant="primary" size="p-sm" text="Submit" />
+      <Button variant="primary" size="p-sm" text="Submit" loading={loading} />
     </div>
   );
 };

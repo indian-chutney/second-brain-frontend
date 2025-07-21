@@ -57,7 +57,7 @@ export const AuthContextProvider = ({ children }: ProviderProps) => {
   };
 
   const logout = () => {
-    setInterval(() => {
+    setTimeout(() => {
       localStorage.removeItem("token");
       setToken(null);
     }, 1000);
