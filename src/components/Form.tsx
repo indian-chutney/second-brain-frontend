@@ -85,6 +85,10 @@ export const Form = (props: FormProps) => {
           if (backendToken) {
             setAuthToken(backendToken);
           }
+
+          if (props.variant === "signup") {
+            localStorage.setItem("newUser", "true");
+          }
         }
       }
     } else if (props.variant == "modal") {

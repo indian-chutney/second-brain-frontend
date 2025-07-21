@@ -5,9 +5,6 @@ import { Logo } from "../assets/icons";
 
 export const Welcome = () => {
   const { welcome, setWelcome } = useModalContext();
-  if (localStorage.getItem("newUser") === "true") {
-    setWelcome(true);
-  }
 
   const [animationState, setAnimationState] = useState<"entering" | "exiting">(
     "entering",
@@ -27,6 +24,7 @@ export const Welcome = () => {
   }, [welcome]);
 
   const handleClose = () => {
+    localStorage.removeItem("newUser");
     setWelcome(false);
   };
 

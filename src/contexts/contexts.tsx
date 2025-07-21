@@ -24,7 +24,9 @@ export const ModalContextProvider = ({ children }: ProviderProps) => {
   const [modal, setModal] = useState(false);
   const [setting, setSetting] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
-  const [welcome, setWelcome] = useState(false);
+  const [welcome, setWelcome] = useState(() => {
+    return localStorage.getItem("newUser") === "true";
+  });
 
   return (
     <ModalContext.Provider
