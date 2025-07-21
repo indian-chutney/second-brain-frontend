@@ -16,9 +16,9 @@ export const Landing = () => {
           <h1 className="text-5xl font-extrabold text-white md:text-6xl leading-tight">
             Save and Share Links Like Never Before
           </h1>
-          <p className="text-[18px] text-neutral-silver max-w-2xl mt-[10px] mx-auto mb-8 ">
-            Organize your thoughts, collections, and tools — all in one place.
-            Perfect for teams, creators, and knowledge hoarders
+          <p className="text-[18px] text-neutral-silver max-w-2xl mt-[20px] mx-auto mb-8 ">
+            No more lost tabs. Just the links you actually want, all in one
+            place. share what matters - without any mess.
           </p>
           <Button
             variant="primary"

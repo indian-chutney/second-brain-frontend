@@ -1,5 +1,6 @@
 import { Modal } from "../components/Modal";
 import { DashboardContent } from "../components/DashBoardContent";
+import { Welcome } from "../components/Welcome";
 
 type dashboardType = "dashboard" | "share";
 
@@ -11,6 +12,7 @@ export const DashBoard = (props: { variant: dashboardType }) => {
         <>
           <DashboardContent variant="dashboard" />
           <Modal variant="content" />
+          <Welcome />
         </>
       ) : (
         <DashboardContent variant="share" />

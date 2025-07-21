@@ -10,6 +10,8 @@ type ModalContextProps = {
   setSetting: React.Dispatch<React.SetStateAction<boolean>>;
   deleteModal: boolean;
   setDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
+  welcome: boolean;
+  setWelcome: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const ModalContext = createContext<ModalContextProps | null>(null);
@@ -22,6 +24,7 @@ export const ModalContextProvider = ({ children }: ProviderProps) => {
   const [modal, setModal] = useState(false);
   const [setting, setSetting] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [welcome, setWelcome] = useState(false);
 
   return (
     <ModalContext.Provider
@@ -32,6 +35,8 @@ export const ModalContextProvider = ({ children }: ProviderProps) => {
         setSetting,
         deleteModal,
         setDeleteModal,
+        welcome,
+        setWelcome,
       }}
     >
       {children}

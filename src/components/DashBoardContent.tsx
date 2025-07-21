@@ -54,7 +54,7 @@ const DashBoardUI = (props: {
   isLoading: boolean;
 }) => {
   const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
-  const { setModal } = useModalContext();
+  const { setModal, setWelcome } = useModalContext();
   const navigate = useNavigate();
 
   const shareCtx = useContext(ShareContext);
@@ -142,6 +142,19 @@ const DashBoardUI = (props: {
             />
           ))}
       </div>
+      <FloatingHelpButton onClick={() => setWelcome(true)} />
     </div>
+  );
+};
+
+const FloatingHelpButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <button
+      onClick={onClick}
+      className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-brand-primary hover:bg-brand-primary/80 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
+      title="Need help? Click to see features"
+    >
+      <span className="text-white text-lg font-bold">?</span>
+    </button>
   );
 };

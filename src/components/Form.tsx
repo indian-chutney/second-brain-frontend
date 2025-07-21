@@ -412,13 +412,20 @@ const ChangePasswordForm = ({
 };
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email id"),
-  password: z.string().min(8, "Password must be longer"),
+  email: z
+    .string()
+    .email("Please enter a valid email address (e.g., user@example.com)"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 
 const signupSchema = loginSchema
   .extend({
-    username: z.string().min(5, "Username must be longer"),
+    username: z
+      .string()
+      .min(5, "Username must be at least 5 characters long")
+      .refine((value) => !/\s/.test(value), {
+        message: "Username cannot contain spaces",
+      }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password == data.confirmPassword, {
@@ -434,7 +441,7 @@ const contentSchema = z.object({
   title: z
     .string()
     .min(1, "Title is required")
-    .max(20, "Maximum limit for title exceeded"),
+    .max(20, "Title can utmost be 20 character long"),
   tags: z
     .array(z.string().min(1, "Tags can't be empty"))
     .min(1, "At least one tag is required"),
@@ -507,12 +514,11 @@ const validateEditForm = (
     {} as Partial<contentDataProps>,
   );
 
-  console.log(filteredData);
-
   if (Object.keys(filteredData).length === 0) {
     return {
       errors: {
-        input: "no value given",
+        input:
+          "Please fill in at least one field (title, type, link, or tags) to continue.",
       },
     };
   }
@@ -527,7 +533,6 @@ const validateEditForm = (
 
   for (const issue of result.error.errors) {
     const field = issue.path[0] as string;
-    // Only add error if the field was actually provided (not filtered out)
     if (Object.prototype.hasOwnProperty.call(filteredData, field)) {
       errors[field] = issue.message;
     }
@@ -613,7 +618,11 @@ const signBackendPost = async (
         const data = err.response?.data.message;
         return { backendError: true, response: data || err.message };
       }
-      return { backendError: true, response: "Unknown error" };
+      return {
+        backendError: true,
+        response:
+          "We couldn't process your request. Please check your connection and try again.",
+      };
     }
   } else {
     try {
