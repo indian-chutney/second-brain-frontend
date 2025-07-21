@@ -65,7 +65,7 @@ export const Modal = ({ variant, onSubmit, edit, contentId }: modalProp) => {
         <FormModalCard edit={!!edit} contentId={contentId} />
       )}
       {variant === "settings" && <SettingModal />}
-      {variant === "delete" && <DeleteModal onSubmit={() => onSubmit} />}
+      {variant === "delete" && <DeleteModal onSubmit={onSubmit!} />}
     </div>
   );
 };
